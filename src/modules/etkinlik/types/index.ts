@@ -1,0 +1,1 @@
+// etkinlik types
