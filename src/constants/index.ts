@@ -11,9 +11,21 @@ export const ROLES = {
   TEACHER: 'TEACHER',
   STUDENT: 'STUDENT',
   PARENT: 'PARENT',
+  KANTINCI: 'KANTINCI',
+  SERVICI: 'SERVICI',
 } as const
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]
+
+// Turkish role names for display
+export const ROLE_NAMES: Record<Role, string> = {
+  ADMIN: 'Admin',
+  TEACHER: 'Öğretmen',
+  STUDENT: 'Öğrenci',
+  PARENT: 'Veli',
+  KANTINCI: 'Kantinci',
+  SERVICI: 'Servici',
+} as const
 
 // Status constants
 export const STATUS = {
