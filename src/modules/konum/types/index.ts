@@ -1,1 +1,0 @@
-// konum types
