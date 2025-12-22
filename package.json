@@ -10,9 +10,6 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "dependencies": {
-    "next": "14.2.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -47,7 +44,10 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.356.0",
+    "next": "^14.2.35",
+    "react": "^18.3.0",
     "react-day-picker": "^8.10.0",
+    "react-dom": "^18.3.0",
     "react-hook-form": "^7.51.2",
     "recharts": "^2.12.3",
     "sonner": "^1.4.41",
