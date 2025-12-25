@@ -1,39 +1,41 @@
 'use client'
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth, MOCK_USERS } from "@/contexts/auth-context"
 
 type LoginStep = 'login' | 'create-password'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { setUser } = useAuth()
   const [step, setStep] = useState<LoginStep>('login')
   const [tcNumber, setTcNumber] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [error, setError] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: API çağrısı - Giriş yap
-    // Eğer kullanıcı bulunamazsa (404), şifre oluşturma ekranına yönlendir
-    
-    try {
-      // const response = await loginAPI(tcNumber, password)
-      // if (response.ok) {
-      //   // Başarılı giriş
-      // }
-      
-      // Simülasyon - yeni kullanıcı
-      const userNotFound = true // Bu API'den gelecek
-      
-      if (userNotFound) {
-        setStep('create-password')
-      }
-    } catch (error) {
-      console.log('Giriş hatası:', error)
+    setError('')
+
+    // Mock authentication - TC: 12345678912, Şifre: 123456
+    const MOCK_TC = '12345678912'
+    const MOCK_PASSWORD = '123456'
+
+    if (tcNumber === MOCK_TC && password === MOCK_PASSWORD) {
+      // Başarılı giriş - Admin kullanıcısını set et
+      setUser(MOCK_USERS.ADMIN)
+      // Admin sayfasına yönlendir
+      router.push('/admin')
+    } else {
+      // Hatalı giriş
+      setError('TC Kimlik Numarası veya Şifre hatalı!')
     }
   }
 
@@ -220,6 +222,13 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
+
+        {/* Hata Mesajı */}
+        {error && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
         {/* Beni Hatırla ve Şifremi Unuttum */}
         <div className="flex items-center justify-between text-sm">
