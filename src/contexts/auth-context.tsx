@@ -1,6 +1,7 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import type { Role } from '@/types/roles'
 
 export interface User {
@@ -66,8 +67,25 @@ export const MOCK_USERS: Record<Role, User> = {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Varsayılan olarak Admin kullanıcısı ile başla
+  const pathname = usePathname()
   const [user, setUser] = useState<User | null>(MOCK_USERS.ADMIN)
+
+  // URL'ye göre otomatik rol değiştirme (test için)
+  useEffect(() => {
+    if (pathname?.startsWith('/admin')) {
+      setUser(MOCK_USERS.ADMIN)
+    } else if (pathname?.startsWith('/veli')) {
+      setUser(MOCK_USERS.VELI)
+    } else if (pathname?.startsWith('/ogrenci')) {
+      setUser(MOCK_USERS.OGRENCI)
+    } else if (pathname?.startsWith('/ogretmen')) {
+      setUser(MOCK_USERS.OGRETMEN)
+    } else if (pathname?.startsWith('/kantinci')) {
+      setUser(MOCK_USERS.KANTINCI)
+    } else if (pathname?.startsWith('/servici')) {
+      setUser(MOCK_USERS.SERVICI)
+    }
+  }, [pathname])
 
   const value = {
     user,
