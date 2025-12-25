@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/contexts/auth-context'
 import { useSidebarStore } from '@/store/sidebar-store'
 import AdminSidebar from '@/components/admin/layout/AdminSidebar'
+import AdminHeader from '@/components/admin/layout/AdminHeader'
 import VeliSidebar from '@/components/veli/layout/VeliSidebar'
 import OgrenciSidebar from '@/components/ogrenci/layout/OgrenciSidebar'
 import OgretmenSidebar from '@/components/ogretmen/layout/OgretmenSidebar'
@@ -34,6 +35,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return <ServiciSidebar />
       default:
         return null
+    }
+  }
+
+  // Rol bazlı header seçimi
+  const renderHeader = () => {
+    if (!user) return null
+
+    switch (user.role) {
+      case 'ADMIN':
+        return <AdminHeader />
+      // Diğer roller için basit header
+      default:
+        return (
+          <header className="border-b bg-white p-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={toggleMobileSidebar}
+                className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              <h1 className="text-xl font-semibold">School Management System</h1>
+            </div>
+          </header>
+        )
     }
   }
 
@@ -76,17 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
         {/* Header */}
-        <header className="border-b bg-white p-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleMobileSidebar}
-              className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <h1 className="text-xl font-semibold">School Management System</h1>
-          </div>
-        </header>
+        {renderHeader()}
 
         {/* Page Content */}
         <main className="flex-1 p-6">{children}</main>
