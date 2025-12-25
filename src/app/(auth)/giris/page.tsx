@@ -24,18 +24,47 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    // Mock authentication - TC: 12345678912, Şifre: 123456
+    // Sabit TC Kimlik Numarası
     const MOCK_TC = '12345678912'
-    const MOCK_PASSWORD = '123456'
 
-    if (tcNumber === MOCK_TC && password === MOCK_PASSWORD) {
-      // Başarılı giriş - Admin kullanıcısını set et
-      setUser(MOCK_USERS.ADMIN)
-      // Admin sayfasına yönlendir
-      router.push('/admin')
-    } else {
-      // Hatalı giriş
-      setError('TC Kimlik Numarası veya Şifre hatalı!')
+    // TC kontrolü
+    if (tcNumber !== MOCK_TC) {
+      setError('TC Kimlik Numarası hatalı!')
+      return
+    }
+
+    // Şifreye göre rol belirleme ve yönlendirme
+    const passwordLower = password.toLowerCase().trim()
+
+    switch (passwordLower) {
+      case 'admin':
+        setUser(MOCK_USERS.ADMIN)
+        router.push('/admin')
+        break
+      case 'veli':
+        setUser(MOCK_USERS.VELI)
+        router.push('/veli')
+        break
+      case 'ogrenci':
+      case 'öğrenci':
+        setUser(MOCK_USERS.OGRENCI)
+        router.push('/ogrenci')
+        break
+      case 'ogretmen':
+      case 'öğretmen':
+        setUser(MOCK_USERS.OGRETMEN)
+        router.push('/ogretmen')
+        break
+      case 'kantinci':
+        setUser(MOCK_USERS.KANTINCI)
+        router.push('/kantinci')
+        break
+      case 'servici':
+        setUser(MOCK_USERS.SERVICI)
+        router.push('/servici')
+        break
+      default:
+        setError('Geçersiz şifre! Lütfen rol adını girin (admin, veli, ogrenci, ogretmen, kantinci, servici)')
     }
   }
 
