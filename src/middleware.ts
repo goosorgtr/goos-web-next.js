@@ -9,16 +9,16 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')
   const { pathname } = request.nextUrl
 
-  // Public routes
-  const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
+  // Public routes - Giriş yapılmadan erişilebilir sayfalar
+  const publicRoutes = ['/giris', '/sifremi-unuttum', '/sifre-yenileme']
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
-  // If trying to access protected route without token
+  // Korumalı sayfaya token olmadan erişmeye çalışılırsa giriş sayfasına yönlendir
   if (!token && !isPublicRoute && pathname !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/giris', request.url))
   }
 
-  // If logged in and trying to access auth pages
+  // Giriş yapmış kullanıcı auth sayfalarına gitmeye çalışırsa dashboard'a yönlendir
   if (token && isPublicRoute) {
     return NextResponse.redirect(new URL('/admin', request.url))
   }

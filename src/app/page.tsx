@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 
 export default function Home() {
-  // Redirect to login page
-  redirect('/login') 
-  
+  // Ana sayfa otomatik olarak giriş sayfasına yönlendirir
+  redirect('/giris') 
 }
