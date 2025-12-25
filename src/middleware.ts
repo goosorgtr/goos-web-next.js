@@ -3,9 +3,12 @@ import type { NextRequest } from 'next/server'
 
 // Middleware to protect routes
 export function middleware(request: NextRequest) {
-  // This is a placeholder for authentication middleware
-  // Will be implemented with proper auth logic
+  // TEMPORARILY DISABLED FOR TESTING WITH MOCK USERS
+  // This middleware will be re-enabled when real authentication is implemented
 
+  return NextResponse.next()
+
+  /* ORIGINAL AUTH LOGIC - COMMENTED OUT FOR TESTING
   const token = request.cookies.get('token')
   const { pathname } = request.nextUrl
 
@@ -24,6 +27,7 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
+  */
 }
 
 export const config = {
