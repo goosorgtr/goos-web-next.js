@@ -1,15 +1,19 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { LogOut } from 'lucide-react'
+import { useAuth } from '@/contexts/auth-context'
 import { useSidebarStore } from '@/store/sidebar-store'
 
 export function LogoutButton() {
+    const router = useRouter()
+    const { logout } = useAuth()
     const closeMobileSidebar = useSidebarStore((state) => state.closeMobileSidebar)
 
     const handleLogout = () => {
-        // Şu aşamada fonksiyonsuz - sadece UI
-        console.log('Logout clicked - functionality not implemented yet')
         closeMobileSidebar()
+        logout()
+        router.push('/giris')
     }
 
     return (

@@ -19,6 +19,7 @@ export interface User {
 interface AuthContextType {
   user: User | null
   setUser: (user: User | null) => void
+  logout: () => void
   isAuthenticated: boolean
 }
 
@@ -87,9 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname])
 
+  const logout = () => {
+    setUser(null)
+  }
+
   const value = {
     user,
     setUser,
+    logout,
     isAuthenticated: !!user,
   }
 
