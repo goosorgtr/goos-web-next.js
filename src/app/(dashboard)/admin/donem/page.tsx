@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, ChevronDown, Check } from 'lucide-react'
+import { Plus, ChevronDown, Check, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,8 +37,29 @@ export default function DonemPage() {
   const [semesterName, setSemesterName] = useState('')
   const [semesterYear, setSemesterYear] = useState('')
   const [openActionsId, setOpenActionsId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const semesters = ['2024 Güz Dönemi', '2024 Bahar Dönemi', '2023 Yaz Okulu']
+
+  // Filtreleme mantığı
+  const filteredSemesters = MOCK_SEMESTERS.filter((semester) => {
+    // Arama filtresi
+    const searchLower = searchQuery.toLowerCase()
+    const matchesSearch = 
+      searchQuery === '' ||
+      semester.name.toLowerCase().includes(searchLower) ||
+      semester.startDate.includes(searchQuery) ||
+      semester.endDate.includes(searchQuery)
+
+    // Durum filtresi
+    const matchesStatus = 
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && semester.isActive) ||
+      (statusFilter === 'inactive' && !semester.isActive)
+
+    return matchesSearch && matchesStatus
+  })
 
   return (
     <div className="space-y-6">
@@ -55,6 +76,32 @@ export default function DonemPage() {
             <Plus className="h-4 w-4" />
             Dönem Tanımla
           </Button>
+        </div>
+      </div>
+
+      {/* Arama ve Filtreler */}
+      <div className="rounded-xl border bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Dönem adı veya tarih ile ara..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <select 
+              className="rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tüm Durumlar</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Pasif</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -160,63 +207,88 @@ export default function DonemPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_SEMESTERS.map((semester) => (
-                <tr key={semester.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-medium">{semester.name}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-muted-foreground">{semester.startDate}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-muted-foreground">{semester.endDate}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="relative">
-                        <button
-                          onClick={() => setOpenActionsId(openActionsId === semester.id ? null : semester.id)}
-                          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                          İşlemler
-                        </button>
-
-                        {/* Actions Dropdown */}
-                        {openActionsId === semester.id && (
-                          <>
-                            <div 
-                              className="fixed inset-0 z-10" 
-                              onClick={() => setOpenActionsId(null)}
-                            />
-                            <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border bg-white shadow-lg">
-                              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
-                                <span>Düzenle</span>
-                              </button>
-                              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
-                                <span>Aktif Et</span>
-                              </button>
-                              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-gray-50">
-                                <span>Sil</span>
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      {semester.isActive && (
-                        <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                          Aktif
-                        </span>
-                      )}
+              {filteredSemesters.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-12 w-12 text-muted-foreground/50" />
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Arama kriterlerinize uygun dönem bulunamadı
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Lütfen farklı arama kriterleri deneyin
+                      </p>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredSemesters.map((semester) => (
+                  <tr key={semester.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-medium">{semester.name}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-muted-foreground">{semester.startDate}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-muted-foreground">{semester.endDate}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="relative">
+                          <button
+                            onClick={() => setOpenActionsId(openActionsId === semester.id ? null : semester.id)}
+                            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            İşlemler
+                          </button>
+
+                          {/* Actions Dropdown */}
+                          {openActionsId === semester.id && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setOpenActionsId(null)}
+                              />
+                              <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border bg-white shadow-lg">
+                                <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
+                                  <span>Düzenle</span>
+                                </button>
+                                <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
+                                  <span>Aktif Et</span>
+                                </button>
+                                <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-gray-50">
+                                  <span>Sil</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        {semester.isActive && (
+                          <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                            Aktif
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Kayıt Sayısı */}
+        {filteredSemesters.length > 0 && (
+          <div className="border-t px-6 py-4">
+            <p className="text-sm text-muted-foreground">
+              Toplam <span className="font-medium">{filteredSemesters.length}</span> dönem gösteriliyor
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

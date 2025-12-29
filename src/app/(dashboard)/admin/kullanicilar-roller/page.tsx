@@ -84,6 +84,33 @@ export default function KullanicilarRollerPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
+  // Filtreleme mantığı
+  const filteredUsers = MOCK_USERS.filter((user) => {
+    // Arama filtresi
+    const searchLower = searchQuery.toLowerCase()
+    const matchesSearch = 
+      searchQuery === '' ||
+      user.name.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower) ||
+      user.userId.toLowerCase().includes(searchLower) ||
+      user.department.toLowerCase().includes(searchLower)
+
+    // Rol filtresi
+    const matchesRole = 
+      selectedRole === 'all' ||
+      user.role.toLowerCase() === selectedRole.toLowerCase() ||
+      (selectedRole === 'ogretmen' && user.role === 'Öğretmen') ||
+      (selectedRole === 'ogrenci' && user.role === 'Öğrenci')
+
+    // Durum filtresi
+    const matchesStatus = 
+      selectedStatus === 'all' ||
+      (selectedStatus === 'active' && user.status === 'Aktif') ||
+      (selectedStatus === 'inactive' && user.status === 'Pasif')
+
+    return matchesSearch && matchesRole && matchesStatus
+  })
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -236,93 +263,109 @@ export default function KullanicilarRollerPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_USERS.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <input type="checkbox" className="rounded border-gray-300" />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      {user.avatar.startsWith('/') ? (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-                          {user.avatar}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.lastSeen}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${user.roleColor}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="text-sm">{user.email}</p>
-                      <p className="text-xs text-muted-foreground">ID: {user.userId}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-muted-foreground">{user.department}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-block h-2 w-2 rounded-full ${
-                        user.status === 'Aktif' ? 'bg-green-600' : 'bg-gray-400'
-                      }`}></span>
-                      <span className={`text-sm font-medium ${user.statusColor}`}>
-                        {user.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="relative">
-                      <button 
-                        onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
-                        className="rounded-lg p-1 hover:bg-gray-100"
-                      >
-                        <MoreVertical className="h-5 w-5 text-gray-400" />
-                      </button>
-                      
-                      {/* Dropdown Menu */}
-                      {openMenuId === user.id && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-10" 
-                            onClick={() => setOpenMenuId(null)}
-                          />
-                          <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border bg-white shadow-lg">
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user)
-                                setEditDialogOpen(true)
-                                setOpenMenuId(null)
-                              }}
-                              className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50"
-                            >
-                              <Edit className="h-4 w-4 text-blue-600" />
-                              <span>Düzenle</span>
-                            </button>
-                            <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
-                              <Key className="h-4 w-4 text-orange-600" />
-                              <span>Şifre Değiştir</span>
-                            </button>
-                            <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50 text-red-600">
-                              <Trash2 className="h-4 w-4" />
-                              <span>Sil</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-12 w-12 text-muted-foreground/50" />
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Arama kriterlerinize uygun kullanıcı bulunamadı
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Lütfen farklı arama kriterleri deneyin
+                      </p>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {user.avatar.startsWith('/') ? (
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
+                            {user.avatar}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.lastSeen}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${user.roleColor}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-sm">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">ID: {user.userId}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-muted-foreground">{user.department}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block h-2 w-2 rounded-full ${
+                          user.status === 'Aktif' ? 'bg-green-600' : 'bg-gray-400'
+                        }`}></span>
+                        <span className={`text-sm font-medium ${user.statusColor}`}>
+                          {user.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="relative">
+                        <button 
+                          onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                          className="rounded-lg p-1 hover:bg-gray-100"
+                        >
+                          <MoreVertical className="h-5 w-5 text-gray-400" />
+                        </button>
+                        
+                        {/* Dropdown Menu */}
+                        {openMenuId === user.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-10" 
+                              onClick={() => setOpenMenuId(null)}
+                            />
+                            <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border bg-white shadow-lg">
+                              <button
+                                onClick={() => {
+                                  setSelectedUser(user)
+                                  setEditDialogOpen(true)
+                                  setOpenMenuId(null)
+                                }}
+                                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50"
+                              >
+                                <Edit className="h-4 w-4 text-blue-600" />
+                                <span>Düzenle</span>
+                              </button>
+                              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50">
+                                <Key className="h-4 w-4 text-orange-600" />
+                                <span>Şifre Değiştir</span>
+                              </button>
+                              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50 text-red-600">
+                                <Trash2 className="h-4 w-4" />
+                                <span>Sil</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -330,7 +373,7 @@ export default function KullanicilarRollerPage() {
         {/* Pagination */}
         <div className="flex items-center justify-between border-t px-6 py-4">
           <p className="text-sm text-muted-foreground">
-            Toplam <span className="font-medium">2452</span> kayıttan <span className="font-medium">1-5</span> arası gösteriliyor
+            Toplam <span className="font-medium">{filteredUsers.length}</span> kayıt {filteredUsers.length > 0 && `gösteriliyor`}
           </p>
           <div className="flex items-center gap-2">
             <button className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">
