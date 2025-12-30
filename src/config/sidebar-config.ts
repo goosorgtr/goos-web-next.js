@@ -22,6 +22,7 @@ import {
     ShoppingCart,
     CheckSquare,
     FileEdit,
+    Upload,
     type LucideIcon,
 } from 'lucide-react'
 import type { Role } from '@/types/roles'
@@ -318,6 +319,20 @@ const ogretmenSidebarConfig: SidebarConfig = {
             label: 'Ders',
             href: '/ogretmen/ders',
             icon: BookOpen,
+            children: [
+                {
+                    id: 'program',
+                    label: 'Program',
+                    href: '/ogretmen/ders/program',
+                    icon: Calendar,
+                },
+                {
+                    id: 'not-girisi',
+                    label: 'Not Girişi',
+                    href: '/ogretmen/ders/not-girisi',
+                    icon: FileEdit,
+                },
+            ],
         },
         {
             id: 'yoklama',
@@ -335,7 +350,21 @@ const ogretmenSidebarConfig: SidebarConfig = {
             id: 'odev',
             label: 'Ödev',
             href: '/ogretmen/odev',
-            icon: FileEdit,
+            icon: FileText,
+            children: [
+                {
+                    id: 'yukleme',
+                    label: 'Yükleme',
+                    href: '/ogretmen/odev/yukleme',
+                    icon: Upload,
+                },
+                {
+                    id: 'kontrol',
+                    label: 'Kontrol',
+                    href: '/ogretmen/odev/kontrol',
+                    icon: ListChecks,
+                },
+            ],
         },
         {
             id: 'mesajlar',
