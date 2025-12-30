@@ -238,6 +238,12 @@ const veliSidebarConfig: SidebarConfig = {
             href: '/veli/kantin',
             icon: ShoppingCart,
         },
+        {
+            id: 'yemek-listesi',
+            label: 'Yemek Listesi',
+            href: '/veli/yemek-listesi',
+            icon: UtensilsCrossed,
+        },
     ],
 }
 
@@ -398,6 +404,12 @@ const ogretmenSidebarConfig: SidebarConfig = {
             label: 'Etkinlik ve Duyuru',
             href: '/ogretmen/etkinlik-duyuru',
             icon: Megaphone,
+        },
+        {
+            id: 'yemek-listesi',
+            label: 'Yemek Listesi',
+            href: '/ogretmen/yemek-listesi',
+            icon: UtensilsCrossed,
         },
         {
             id: 'bildirim',
