@@ -184,6 +184,12 @@ const veliSidebarConfig: SidebarConfig = {
             icon: BookOpen,
         },
         {
+            id: 'odevler',
+            label: 'Ödevler',
+            href: '/veli/odevler',
+            icon: FileText,
+        },
+        {
             id: 'mesajlar',
             label: 'Mesajlar',
             href: '/veli/mesajlar',

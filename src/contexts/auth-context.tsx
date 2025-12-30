@@ -69,22 +69,24 @@ export const MOCK_USERS: Record<Role, User> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const [user, setUser] = useState<User | null>(MOCK_USERS.ADMIN)
+  // URL'den kullanıcı rolünü belirleme fonksiyonu
+  const getUserFromPath = (path: string | null) => {
+    if (path?.startsWith('/admin')) return MOCK_USERS.ADMIN
+    if (path?.startsWith('/veli')) return MOCK_USERS.VELI
+    if (path?.startsWith('/ogrenci')) return MOCK_USERS.OGRENCI
+    if (path?.startsWith('/ogretmen')) return MOCK_USERS.OGRETMEN
+    if (path?.startsWith('/kantinci')) return MOCK_USERS.KANTINCI
+    if (path?.startsWith('/servici')) return MOCK_USERS.SERVICI
+    return null
+  }
 
-  // URL'ye göre otomatik rol değiştirme (test için)
+  const [user, setUser] = useState<User | null>(() => getUserFromPath(pathname))
+
+  // URL değiştiğinde kullanıcıyı güncelle
   useEffect(() => {
-    if (pathname?.startsWith('/admin')) {
-      setUser(MOCK_USERS.ADMIN)
-    } else if (pathname?.startsWith('/veli')) {
-      setUser(MOCK_USERS.VELI)
-    } else if (pathname?.startsWith('/ogrenci')) {
-      setUser(MOCK_USERS.OGRENCI)
-    } else if (pathname?.startsWith('/ogretmen')) {
-      setUser(MOCK_USERS.OGRETMEN)
-    } else if (pathname?.startsWith('/kantinci')) {
-      setUser(MOCK_USERS.KANTINCI)
-    } else if (pathname?.startsWith('/servici')) {
-      setUser(MOCK_USERS.SERVICI)
+    const newUser = getUserFromPath(pathname)
+    if (newUser?.id !== user?.id) {
+      setUser(newUser)
     }
   }, [pathname])
 

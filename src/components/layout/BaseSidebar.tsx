@@ -31,8 +31,8 @@ export function BaseSidebar({ config, user }: BaseSidebarProps) {
                     </div>
                 </div>
 
-                {/* User Info - Öğrenci ve Öğretmen için */}
-                {(user.role === 'OGRENCI' || user.role === 'OGRETMEN') && (
+                {/* User Info - Öğrenci için */}
+                {(user.role === 'OGRENCI') && (
                     <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300">
                             <span className="text-sm font-semibold text-gray-700">
@@ -43,7 +43,6 @@ export function BaseSidebar({ config, user }: BaseSidebarProps) {
                             <p className="text-sm font-semibold text-gray-900">{user.name}</p>
                             <p className="text-xs text-gray-500">
                                 {user.role === 'OGRENCI' && user.class && `Öğrenci - ${user.class}`}
-                                {user.role === 'OGRETMEN' && user.subject}
                             </p>
                         </div>
                     </div>
