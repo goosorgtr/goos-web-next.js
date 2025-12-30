@@ -251,6 +251,20 @@ const ogrenciSidebarConfig: SidebarConfig = {
             label: 'Ders',
             href: '/ogrenci/ders',
             icon: BookOpen,
+            children: [
+                {
+                    id: 'program',
+                    label: 'Program',
+                    href: '/ogrenci/ders/program',
+                    icon: Calendar,
+                },
+                {
+                    id: 'not',
+                    label: 'Not',
+                    href: '/ogrenci/ders/not',
+                    icon: FileEdit,
+                },
+            ],
         },
         {
             id: 'devamsizlik',
