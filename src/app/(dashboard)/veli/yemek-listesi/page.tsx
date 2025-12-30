@@ -1,9 +1,9 @@
 'use client'
 
-import { VeliDersProgramiDashboard } from '@/components/veli/ders-programi/VeliDersProgramiDashboard'
+import { VeliYemekListesiDashboard } from '@/components/veli/yemek-listesi/VeliYemekListesiDashboard'
 import { useAuth } from '@/contexts/auth-context'
 
-export default function VeliDersProgramiPage() {
+export default function VeliYemekListesiPage() {
     const { user } = useAuth()
 
     if (!user) return null
@@ -11,5 +11,5 @@ export default function VeliDersProgramiPage() {
     // TODO: Get selected child's ID from user context or state
     const selectedChildId = user.id // Placeholder
 
-    return <VeliDersProgramiDashboard userId={user.id} ogrenciId={selectedChildId} />
+    return <VeliYemekListesiDashboard userId={user.id} ogrenciId={selectedChildId} />
 }

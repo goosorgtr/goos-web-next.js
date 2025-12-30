@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Eye, Download, Trash2, ChevronDown } from 'lucide-react'
+import { Upload, Eye, Download, Trash2, ChevronDown, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { PdfViewer } from '@/modules/pdf-viewer/components/PdfViewer'
+import { usePdfViewer } from '@/modules/pdf-viewer/hooks/usePdfViewer'
 
 // Mock data
 const MOCK_CLASS_SCHEDULES = [
@@ -12,21 +14,24 @@ const MOCK_CLASS_SCHEDULES = [
     className: '12-A',
     status: 'active',
     icon: '🎓',
-    iconColor: 'bg-orange-100'
+    iconColor: 'bg-orange-100',
+    sinifId: '12a'
   },
   {
     id: '2',
     className: '10-B',
     status: 'active',
     icon: '📚',
-    iconColor: 'bg-purple-100'
+    iconColor: 'bg-purple-100',
+    sinifId: '10b'
   },
   {
     id: '3',
     className: '8-C',
     status: 'passive',
     icon: '👤',
-    iconColor: 'bg-blue-100'
+    iconColor: 'bg-blue-100',
+    sinifId: '8c'
   }
 ]
 
@@ -38,6 +43,33 @@ export default function SinifDersProgramiPage() {
   const [selectedBranch, setSelectedBranch] = useState('')
   const [showClassDropdown, setShowClassDropdown] = useState(false)
   const [showBranchDropdown, setShowBranchDropdown] = useState(false)
+  const [viewingSchedule, setViewingSchedule] = useState<string | null>(null)
+
+  const {
+    document,
+    isLoading,
+    error,
+    scale,
+    handleDownload,
+    handlePrint,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset,
+    isDownloading,
+  } = usePdfViewer({
+    role: 'ADMIN',
+    userId: 'admin-1',
+    type: 'ders-programi',
+    sinifId: viewingSchedule || undefined,
+  })
+
+  const handleViewSchedule = (sinifId: string) => {
+    setViewingSchedule(sinifId)
+  }
+
+  const handleCloseViewer = () => {
+    setViewingSchedule(null)
+  }
 
   return (
     <div className="space-y-6">
@@ -53,7 +85,7 @@ export default function SinifDersProgramiPage() {
         {/* Sol Taraf - Aktif Ders Programları */}
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold">Aktif Ders Programları</h2>
-          
+
           {/* Table */}
           <div className="mb-4 rounded-lg border">
             <table className="w-full">
@@ -82,17 +114,19 @@ export default function SinifDersProgramiPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                        schedule.status === 'active' 
-                          ? 'bg-green-100 text-green-700' 
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${schedule.status === 'active'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-gray-100 text-gray-700'
-                      }`}>
+                        }`}>
                         {schedule.status === 'active' ? 'Aktif' : 'Pasif'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button className="rounded-lg p-2 text-blue-600 hover:bg-blue-50">
+                        <button
+                          onClick={() => handleViewSchedule(schedule.sinifId)}
+                          className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                        >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button className="rounded-lg p-2 text-green-600 hover:bg-green-50">
@@ -117,7 +151,7 @@ export default function SinifDersProgramiPage() {
         {/* Sağ Taraf - Yeni Ders Programı Yükle */}
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold">Yeni Ders Programı Yükle</h2>
-          
+
           <div className="space-y-4">
             {/* Sınıf Seç */}
             <div className="space-y-2">
@@ -135,8 +169,8 @@ export default function SinifDersProgramiPage() {
 
                 {showClassDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowClassDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
@@ -174,8 +208,8 @@ export default function SinifDersProgramiPage() {
 
                 {showBranchDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowBranchDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-lg border bg-white shadow-lg">
@@ -230,14 +264,60 @@ export default function SinifDersProgramiPage() {
                 </div>
               </div>
               <p className="ml-7 text-xs leading-relaxed text-blue-700">
-                Yeni bir ders programı yüklemek, mevcut aktif programı arşivleyecektir. 
-                Yayınlandıktan sonra ilgili tüm öğretmen ve öğrencilere otomatik olarak 
+                Yeni bir ders programı yüklemek, mevcut aktif programı arşivleyecektir.
+                Yayınlandıktan sonra ilgili tüm öğretmen ve öğrencilere otomatik olarak
                 bildirim gönderilecektir.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {viewingSchedule && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-auto bg-white rounded-lg shadow-xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
+              <h2 className="text-xl font-bold">Ders Programı Görüntüleme</h2>
+              <button
+                onClick={handleCloseViewer}
+                className="rounded-lg p-2 hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Yükleniyor...</p>
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <p className="text-red-600 font-medium">Hata: {error.message}</p>
+                    <p className="text-gray-500 text-sm mt-2">Program yüklenemedi</p>
+                  </div>
+                </div>
+              ) : (
+                <PdfViewer
+                  document={document}
+                  actions={['download', 'print', 'zoom-in', 'zoom-out', 'zoom-reset']}
+                  scale={scale}
+                  onZoomIn={handleZoomIn}
+                  onZoomOut={handleZoomOut}
+                  onZoomReset={handleZoomReset}
+                  onDownload={handleDownload}
+                  onPrint={handlePrint}
+                  isDownloading={isDownloading}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

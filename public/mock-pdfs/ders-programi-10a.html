@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-A Sınıfı Ders Programı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #1e40af;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        tr:hover {
+            background-color: #eff6ff;
+        }
+        
+        .time-cell {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        .subject {
+            font-weight: 600;
+            color: #1e293b;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .teacher {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .break {
+            background-color: #fef3c7 !important;
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>10-A Sınıfı Ders Programı</h1>
+        <p>2024-2025 Eğitim Öğretim Yılı - Güz Dönemi</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Saat</th>
+                <th>Pazartesi</th>
+                <th>Salı</th>
+                <th>Çarşamba</th>
+                <th>Perşembe</th>
+                <th>Cuma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="time-cell">08:30 - 09:20</td>
+                <td>
+                    <span class="subject">Matematik</span>
+                    <span class="teacher">Hakan Yılmaz</span>
+                </td>
+                <td>
+                    <span class="subject">Türkçe</span>
+                    <span class="teacher">Ayşe Demir</span>
+                </td>
+                <td>
+                    <span class="subject">Fizik</span>
+                    <span class="teacher">Mehmet Kaya</span>
+                </td>
+                <td>
+                    <span class="subject">Kimya</span>
+                    <span class="teacher">Zeynep Şahin</span>
+                </td>
+                <td>
+                    <span class="subject">Biyoloji</span>
+                    <span class="teacher">Ali Yıldız</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell">09:30 - 10:20</td>
+                <td>
+                    <span class="subject">Türkçe</span>
+                    <span class="teacher">Ayşe Demir</span>
+                </td>
+                <td>
+                    <span class="subject">Matematik</span>
+                    <span class="teacher">Hakan Yılmaz</span>
+                </td>
+                <td>
+                    <span class="subject">İngilizce</span>
+                    <span class="teacher">Fatma Öztürk</span>
+                </td>
+                <td>
+                    <span class="subject">Tarih</span>
+                    <span class="teacher">Mustafa Çelik</span>
+                </td>
+                <td>
+                    <span class="subject">Coğrafya</span>
+                    <span class="teacher">Elif Arslan</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell">10:30 - 11:20</td>
+                <td>
+                    <span class="subject">Fizik</span>
+                    <span class="teacher">Mehmet Kaya</span>
+                </td>
+                <td>
+                    <span class="subject">Kimya</span>
+                    <span class="teacher">Zeynep Şahin</span>
+                </td>
+                <td>
+                    <span class="subject">Matematik</span>
+                    <span class="teacher">Hakan Yılmaz</span>
+                </td>
+                <td>
+                    <span class="subject">Biyoloji</span>
+                    <span class="teacher">Ali Yıldız</span>
+                </td>
+                <td>
+                    <span class="subject">Türkçe</span>
+                    <span class="teacher">Ayşe Demir</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell">11:30 - 12:20</td>
+                <td>
+                    <span class="subject">İngilizce</span>
+                    <span class="teacher">Fatma Öztürk</span>
+                </td>
+                <td>
+                    <span class="subject">Biyoloji</span>
+                    <span class="teacher">Ali Yıldız</span>
+                </td>
+                <td>
+                    <span class="subject">Tarih</span>
+                    <span class="teacher">Mustafa Çelik</span>
+                </td>
+                <td>
+                    <span class="subject">Fizik</span>
+                    <span class="teacher">Mehmet Kaya</span>
+                </td>
+                <td>
+                    <span class="subject">Matematik</span>
+                    <span class="teacher">Hakan Yılmaz</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell break" colspan="6">12:20 - 13:00 ÖĞLE ARASI</td>
+            </tr>
+            <tr>
+                <td class="time-cell">13:00 - 13:50</td>
+                <td>
+                    <span class="subject">Kimya</span>
+                    <span class="teacher">Zeynep Şahin</span>
+                </td>
+                <td>
+                    <span class="subject">Fizik</span>
+                    <span class="teacher">Mehmet Kaya</span>
+                </td>
+                <td>
+                    <span class="subject">Biyoloji</span>
+                    <span class="teacher">Ali Yıldız</span>
+                </td>
+                <td>
+                    <span class="subject">İngilizce</span>
+                    <span class="teacher">Fatma Öztürk</span>
+                </td>
+                <td>
+                    <span class="subject">Beden Eğitimi</span>
+                    <span class="teacher">Ahmet Kara</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell">14:00 - 14:50</td>
+                <td>
+                    <span class="subject">Coğrafya</span>
+                    <span class="teacher">Elif Arslan</span>
+                </td>
+                <td>
+                    <span class="subject">Tarih</span>
+                    <span class="teacher">Mustafa Çelik</span>
+                </td>
+                <td>
+                    <span class="subject">Rehberlik</span>
+                    <span class="teacher">Selin Aydın</span>
+                </td>
+                <td>
+                    <span class="subject">Matematik</span>
+                    <span class="teacher">Hakan Yılmaz</span>
+                </td>
+                <td>
+                    <span class="subject">Seçmeli Ders</span>
+                    <span class="teacher">-</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Sınıf Öğretmeni: Ayşe Demir | Müdür Yardımcısı: Mehmet Yılmaz</p>
+        <p>Bu program 2024-2025 eğitim öğretim yılı için geçerlidir.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakan Yılmaz - Matematik Öğretmeni Ders Programı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #059669;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #047857;
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header h2 {
+            color: #10b981;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        tr:hover {
+            background-color: #ecfdf5;
+        }
+
+        .time-cell {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .class {
+            font-weight: 600;
+            color: #1e293b;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .room {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .break {
+            background-color: #fef3c7 !important;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .empty {
+            background-color: #f8fafc;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #047857;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Hakan Yılmaz</h1>
+        <h2>Matematik Öğretmeni</h2>
+        <p>2024-2025 Eğitim Öğretim Yılı - Haftalık Ders Programı</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Saat</th>
+                <th>Pazartesi</th>
+                <th>Salı</th>
+                <th>Çarşamba</th>
+                <th>Perşembe</th>
+                <th>Cuma</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="time-cell">08:30 - 09:20</td>
+                <td>
+                    <span class="class">10-A</span>
+                    <span class="room">Sınıf 201</span>
+                </td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+            </tr>
+            <tr>
+                <td class="time-cell">09:30 - 10:20</td>
+                <td class="empty">-</td>
+                <td>
+                    <span class="class">10-A</span>
+                    <span class="room">Sınıf 201</span>
+                </td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+            </tr>
+            <tr>
+                <td class="time-cell">10:30 - 11:20</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td>
+                    <span class="class">10-A</span>
+                    <span class="room">Sınıf 201</span>
+                </td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+            </tr>
+            <tr>
+                <td class="time-cell">11:30 - 12:20</td>
+                <td>
+                    <span class="class">9-B</span>
+                    <span class="room">Sınıf 105</span>
+                </td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td>
+                    <span class="class">10-A</span>
+                    <span class="room">Sınıf 201</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="time-cell break" colspan="6">12:20 - 13:00 ÖĞLE ARASI</td>
+            </tr>
+            <tr>
+                <td class="time-cell">13:00 - 13:50</td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+                <td>
+                    <span class="class">11-C</span>
+                    <span class="room">Sınıf 305</span>
+                </td>
+                <td class="empty">-</td>
+                <td class="empty">-</td>
+            </tr>
+            <tr>
+                <td class="time-cell">14:00 - 14:50</td>
+                <td>
+                    <span class="class">11-A</span>
+                    <span class="room">Sınıf 301</span>
+                </td>
+                <td>
+                    <span class="class">11-B</span>
+                    <span class="room">Sınıf 302</span>
+                </td>
+                <td class="empty">-</td>
+                <td>
+                    <span class="class">10-A</span>
+                    <span class="room">Sınıf 201</span>
+                </td>
+                <td class="empty">-</td>
+            </tr>
+            <tr>
+                <td class="time-cell">15:00 - 15:50</td>
+                <td>
+                    <span class="class">9-A</span>
+                    <span class="room">Sınıf 101</span>
+                </td>
+                <td>
+                    <span class="class">9-C</span>
+                    <span class="room">Sınıf 103</span>
+                </td>
+                <td>
+                    <span class="class">10-B</span>
+                    <span class="room">Sınıf 202</span>
+                </td>
+                <td>
+                    <span class="class">11-A</span>
+                    <span class="room">Sınıf 301</span>
+                </td>
+                <td class="empty">-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-value">24</div>
+            <div class="stat-label">Haftalık Ders Saati</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">8</div>
+            <div class="stat-label">Farklı Sınıf</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Gün</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Branş: Matematik | Kıdem: 12 Yıl | Oda: Öğretmenler Odası</p>
+        <p>Bu program 2024-2025 eğitim öğretim yılı için geçerlidir.</p>
+    </div>
+</body>
+
+</html>
