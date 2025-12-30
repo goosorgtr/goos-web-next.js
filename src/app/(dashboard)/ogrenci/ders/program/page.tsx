@@ -1,10 +1,12 @@
-import React from 'react'
+'use client'
+
+import { OgrenciDersProgramiDashboard } from '@/components/ogrenci/ders-programi/OgrenciDersProgramiDashboard'
+import { useAuth } from '@/contexts/auth-context'
 
 export default function DersProgramiPage() {
-    return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Ders Programı</h1>
-            <p className="text-gray-500">Haftalık ders programınız burada görüntülenecek.</p>
-        </div>
-    )
+    const { user } = useAuth()
+
+    if (!user) return null
+
+    return <OgrenciDersProgramiDashboard userId={user.id} ogrenciId={user.id} />
 }

@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Edit, Trash2, Zap, Upload } from 'lucide-react'
+import { Edit, Trash2, Zap, Upload, Eye, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PdfViewer } from '@/modules/pdf-viewer/components/PdfViewer'
+import { usePdfViewer } from '@/modules/pdf-viewer/hooks/usePdfViewer'
 
 // Mock data
 const MOCK_MENUS = [
@@ -12,19 +14,22 @@ const MOCK_MENUS = [
     id: '1',
     name: 'Ekim 2023 Yemek Menüsü',
     status: 'active',
-    createdAt: '25 Eki 2023, 10:23'
+    createdAt: '25 Eki 2023, 10:23',
+    yemekId: 'yemek-1'
   },
   {
     id: '2',
     name: 'Eylül 2023 Yemek Menüsü',
     status: 'passive',
-    createdAt: '24 Eki 2023, 16:15'
+    createdAt: '24 Eki 2023, 16:15',
+    yemekId: 'yemek-2'
   },
   {
     id: '3',
     name: 'Ağustos 2023 Yaz Okulu Menüsü',
     status: 'passive',
-    createdAt: '20 Eki 2023, 09:00'
+    createdAt: '20 Eki 2023, 09:00',
+    yemekId: 'yemek-3'
   }
 ]
 
@@ -32,6 +37,24 @@ export default function YemekListesiPage() {
   const [menuTitle, setMenuTitle] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [dragActive, setDragActive] = useState(false)
+  const [viewingMenu, setViewingMenu] = useState<string | null>(null)
+
+  const {
+    document,
+    isLoading,
+    error,
+    scale,
+    handleDownload,
+    handlePrint,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset,
+    isDownloading,
+  } = usePdfViewer({
+    role: 'ADMIN',
+    userId: 'admin-1',
+    type: 'yemek-programi',
+  })
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -47,7 +70,7 @@ export default function YemekListesiPage() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       console.log('File dropped:', e.dataTransfer.files[0])
     }
@@ -61,6 +84,14 @@ export default function YemekListesiPage() {
 
   const handleSave = () => {
     console.log('Saving menu:', menuTitle, isActive)
+  }
+
+  const handleViewMenu = (yemekId: string) => {
+    setViewingMenu(yemekId)
+  }
+
+  const handleCloseViewer = () => {
+    setViewingMenu(null)
   }
 
   return (
@@ -115,11 +146,10 @@ export default function YemekListesiPage() {
 
                     {/* Durum */}
                     <td className="px-6 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                        menu.status === 'active' 
-                          ? 'bg-green-100 text-green-700' 
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${menu.status === 'active'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-gray-100 text-gray-700'
-                      }`}>
+                        }`}>
                         {menu.status === 'active' ? 'Aktif' : 'Pasif'}
                       </span>
                     </td>
@@ -127,6 +157,13 @@ export default function YemekListesiPage() {
                     {/* İşlemler */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
+                        {/* Görüntüle */}
+                        <button
+                          onClick={() => handleViewMenu(menu.yemekId)}
+                          className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
                         {/* Düzenle */}
                         <button className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50">
                           <Edit className="h-4 w-4" />
@@ -184,11 +221,10 @@ export default function YemekListesiPage() {
             <div className="space-y-2">
               <Label>PDF Yükleme Alanı</Label>
               <div
-                className={`relative flex min-h-[200px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
-                  dragActive
+                className={`relative flex min-h-[200px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${dragActive
                     ? 'border-primary bg-primary/5'
                     : 'border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary/5'
-                }`}
+                  }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -224,14 +260,12 @@ export default function YemekListesiPage() {
               <button
                 id="active-publish"
                 onClick={() => setIsActive(!isActive)}
-                className={`relative h-6 w-11 rounded-full transition-colors ${
-                  isActive ? 'bg-primary' : 'bg-gray-300'
-                }`}
+                className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-primary' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                    isActive ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0.5'
+                    }`}
                 />
               </button>
             </div>
@@ -246,6 +280,52 @@ export default function YemekListesiPage() {
           </div>
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {viewingMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-auto bg-white rounded-lg shadow-xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
+              <h2 className="text-xl font-bold">Yemek Listesi Görüntüleme</h2>
+              <button
+                onClick={handleCloseViewer}
+                className="rounded-lg p-2 hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Yükleniyor...</p>
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <p className="text-red-600 font-medium">Hata: {error.message}</p>
+                    <p className="text-gray-500 text-sm mt-2">Yemek listesi yüklenemedi</p>
+                  </div>
+                </div>
+              ) : (
+                <PdfViewer
+                  document={document}
+                  actions={['download', 'print', 'zoom-in', 'zoom-out', 'zoom-reset']}
+                  scale={scale}
+                  onZoomIn={handleZoomIn}
+                  onZoomOut={handleZoomOut}
+                  onZoomReset={handleZoomReset}
+                  onDownload={handleDownload}
+                  onPrint={handlePrint}
+                  isDownloading={isDownloading}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

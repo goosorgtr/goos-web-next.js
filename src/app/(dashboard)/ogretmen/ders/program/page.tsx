@@ -1,8 +1,12 @@
+'use client'
+
+import { OgretmenDersProgramiDashboard } from '@/components/ogretmen/ders-programi/OgretmenDersProgramiDashboard'
+import { useAuth } from '@/contexts/auth-context'
+
 export default function ProgramPage() {
-    return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Ders Programı</h1>
-            <p className="text-muted-foreground">Ders programı içeriği buraya gelecek.</p>
-        </div>
-    )
+    const { user } = useAuth()
+
+    if (!user) return null
+
+    return <OgretmenDersProgramiDashboard userId={user.id} ogretmenId={user.id} />
 }
