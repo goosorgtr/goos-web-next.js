@@ -41,7 +41,7 @@ export function SidebarItem({
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isChild && 'pl-11',
                 isActive
-                    ? 'bg-blue-50 text-blue-600'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-gray-700 hover:bg-gray-100'
             )}
         >

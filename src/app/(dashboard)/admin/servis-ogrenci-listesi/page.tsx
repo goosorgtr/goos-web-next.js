@@ -28,25 +28,25 @@ export default function ServisOgrenciListesiPage() {
   const [selectedAssignedStudents, setSelectedAssignedStudents] = useState<string[]>([])
 
   const toggleAllStudent = (id: string) => {
-    setSelectedAllStudents(prev => 
+    setSelectedAllStudents(prev =>
       prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]
     )
   }
 
   const toggleAssignedStudent = (id: string) => {
-    setSelectedAssignedStudents(prev => 
+    setSelectedAssignedStudents(prev =>
       prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]
     )
   }
 
   const toggleAllCheckboxAll = () => {
-    setSelectedAllStudents(prev => 
+    setSelectedAllStudents(prev =>
       prev.length === MOCK_ALL_STUDENTS.length ? [] : MOCK_ALL_STUDENTS.map(s => s.id)
     )
   }
 
   const toggleAllCheckboxAssigned = () => {
-    setSelectedAssignedStudents(prev => 
+    setSelectedAssignedStudents(prev =>
       prev.length === MOCK_ASSIGNED_STUDENTS.length ? [] : MOCK_ASSIGNED_STUDENTS.map(s => s.id)
     )
   }
@@ -92,8 +92,8 @@ export default function ServisOgrenciListesiPage() {
 
             {showVehicleDropdown && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
+                <div
+                  className="fixed inset-0 z-10"
                   onClick={() => setShowVehicleDropdown(false)}
                 />
                 <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-lg border bg-white shadow-lg">
@@ -165,39 +165,45 @@ export default function ServisOgrenciListesiPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {MOCK_ALL_STUDENTS.map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedAllStudents.includes(student.id)}
-                          onChange={() => toggleAllStudent(student.id)}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{student.name}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm">{student.class}</p>
-                      </td>
-                    </tr>
-                  ))}
+                  {MOCK_ALL_STUDENTS
+                    .filter(student =>
+                      student.name.toLowerCase().includes(searchAll.toLowerCase()) ||
+                      student.class.toLowerCase().includes(searchAll.toLowerCase()) ||
+                      student.id.includes(searchAll)
+                    )
+                    .map((student) => (
+                      <tr key={student.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedAllStudents.includes(student.id)}
+                            onChange={() => toggleAllStudent(student.id)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium">{student.name}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm">{student.class}</p>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
 
             {/* Butonlar */}
             <div className="mt-4 flex gap-2">
-              <Button 
+              <Button
                 className="flex-1 gap-2"
                 disabled={selectedAllStudents.length === 0}
               >
                 Ekle
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1"
                 disabled={selectedAssignedStudents.length === 0}
               >
@@ -255,24 +261,30 @@ export default function ServisOgrenciListesiPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {MOCK_ASSIGNED_STUDENTS.map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedAssignedStudents.includes(student.id)}
-                          onChange={() => toggleAssignedStudent(student.id)}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{student.name}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm">{student.class}</p>
-                      </td>
-                    </tr>
-                  ))}
+                  {MOCK_ASSIGNED_STUDENTS
+                    .filter(student =>
+                      student.name.toLowerCase().includes(searchAssigned.toLowerCase()) ||
+                      student.class.toLowerCase().includes(searchAssigned.toLowerCase()) ||
+                      student.id.includes(searchAssigned)
+                    )
+                    .map((student) => (
+                      <tr key={student.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedAssignedStudents.includes(student.id)}
+                            onChange={() => toggleAssignedStudent(student.id)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium">{student.name}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm">{student.class}</p>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

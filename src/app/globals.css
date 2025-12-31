@@ -47,6 +47,36 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
+
+  .theme-ogrenci {
+    --primary: 20.5 90.2% 48.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 27.1 96% 61.2%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 34.3 100% 91.6%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --ring: 20.5 90.2% 48.2%;
+  }
+
+  .theme-ogretmen {
+    --primary: 161.4 93.5% 30.4%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 158.1 64.2% 51.6%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 148.9 81.3% 89.6%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --ring: 161.4 93.5% 30.4%;
+  }
+
+  .theme-veli {
+    --primary: 258.3 79.4% 58.6%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 255.3 91.7% 76.3%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 250 88.9% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --ring: 258.3 79.4% 58.6%;
+  }
 }
 
 @layer base {

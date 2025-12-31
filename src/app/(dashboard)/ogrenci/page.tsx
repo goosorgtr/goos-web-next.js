@@ -14,7 +14,7 @@ export default function AnasayfaPage() {
           <button className="rounded-full bg-white p-2 shadow-sm hover:bg-gray-50">
             <Bell className="h-6 w-6 text-gray-600" />
           </button>
-          <button className="rounded-full bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700">
+          <button className="rounded-full bg-primary px-6 py-2 font-semibold text-white hover:bg-primary/90">
             Profilim
           </button>
         </div>
@@ -25,12 +25,12 @@ export default function AnasayfaPage() {
         <div className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <MapPin className="h-5 w-5" />
               </div>
               <h2 className="text-lg font-bold">Güncel Yoklama Durumu</h2>
             </div>
-            <button className="text-sm font-semibold text-blue-600 hover:underline">
+            <button className="text-sm font-semibold text-primary hover:underline">
               Detaylı Rapor →
             </button>
           </div>
@@ -55,7 +55,7 @@ export default function AnasayfaPage() {
                   <div key={day} className="flex flex-col items-center gap-2">
                     <span className="text-xs text-gray-400">{day}</span>
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${i < 2 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-300'
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${i < 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-300'
                         }`}
                     >
                       {i < 2 ? '✓' : '-'}
@@ -68,8 +68,8 @@ export default function AnasayfaPage() {
                   <p className="text-xs font-bold text-orange-600">Özürsüz</p>
                   <p className="text-xl font-bold text-gray-900">1.5 Gün</p>
                 </div>
-                <div className="rounded-lg bg-blue-50 p-3">
-                  <p className="text-xs font-bold text-blue-600">Özürlü</p>
+                <div className="rounded-lg bg-primary/5 p-3">
+                  <p className="text-xs font-bold text-primary">Özürlü</p>
                   <p className="text-xl font-bold text-gray-900">0 Gün</p>
                 </div>
               </div>
@@ -240,8 +240,8 @@ export default function AnasayfaPage() {
           </div>
 
           {/* Card 3 */}
-          <div className="rounded-xl bg-blue-50 p-6">
-            <span className="rounded bg-blue-100 px-2 py-1 text-[10px] font-bold text-blue-600">DUYURU</span>
+          <div className="rounded-xl bg-primary/5 p-6">
+            <span className="rounded bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">DUYURU</span>
             <h3 className="mt-3 text-lg font-bold text-gray-900">Kantin Kartı Sistem Güncellemesi</h3>
             <p className="mt-2 text-sm text-gray-600">Hafta sonu yapılacak bakım çalışması nedeniyle...</p>
           </div>

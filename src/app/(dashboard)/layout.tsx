@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
                   <span className="text-lg font-bold">G</span>
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">GOOS Okul Yönetimi</h1>
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.role}</p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
                   {user.name.charAt(0)}
                 </div>
               </div>
@@ -119,7 +119,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className={cn(
+      "flex min-h-screen bg-gray-50",
+      user?.role === 'OGRENCI' && 'theme-ogrenci',
+      user?.role === 'OGRETMEN' && 'theme-ogretmen',
+      user?.role === 'VELI' && 'theme-veli'
+    )}>
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 border-r bg-white lg:block">
         {renderSidebar()}

@@ -20,7 +20,7 @@ export function BaseSidebar({ config, user }: BaseSidebarProps) {
             {/* Header */}
             <div className="border-b p-4">
                 <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
                         <GraduationCap className="h-6 w-6 text-white" />
                     </div>
                     <div>
