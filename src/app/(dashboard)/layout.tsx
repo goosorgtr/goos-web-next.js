@@ -55,12 +55,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Menu className="h-6 w-6" />
               </button>
 
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-                  <span className="text-lg font-bold">G</span>
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">GOOS Okul Yönetimi</h1>
-              </div>
             </div>
 
             <div className="flex items-center gap-4">
@@ -113,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
               </div>
             </div>
-          </header>
+          </header >
         )
     }
   }
