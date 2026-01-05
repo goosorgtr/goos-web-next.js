@@ -244,6 +244,12 @@ const veliSidebarConfig: SidebarConfig = {
             href: '/veli/yemek-listesi',
             icon: UtensilsCrossed,
         },
+        {
+            id: 'ayarlar',
+            label: 'Ayarlar',
+            href: '/veli/ayarlar',
+            icon: Settings,
+        },
     ],
 }
 
