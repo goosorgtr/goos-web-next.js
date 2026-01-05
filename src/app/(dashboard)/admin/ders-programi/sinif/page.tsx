@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Eye, Download, Trash2, ChevronDown, X } from 'lucide-react'
+import { Upload, Eye, Download, Trash2, ChevronDown, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { PdfViewer } from '@/modules/pdf-viewer/components/PdfViewer'
 import { usePdfViewer } from '@/modules/pdf-viewer/hooks/usePdfViewer'
+import { pdfViewerService } from '@/modules/pdf-viewer/services/pdf-viewer.service'
+import { downloadPdf, generateFilename } from '@/modules/pdf-viewer/utils/pdf-helpers'
 
 // Mock data
 const MOCK_CLASS_SCHEDULES = [
@@ -44,6 +46,7 @@ export default function SinifDersProgramiPage() {
   const [showClassDropdown, setShowClassDropdown] = useState(false)
   const [showBranchDropdown, setShowBranchDropdown] = useState(false)
   const [viewingSchedule, setViewingSchedule] = useState<string | null>(null)
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set())
 
   const {
     document,
@@ -69,6 +72,26 @@ export default function SinifDersProgramiPage() {
 
   const handleCloseViewer = () => {
     setViewingSchedule(null)
+  }
+
+  const handleDirectDownload = async (sinifId: string) => {
+    try {
+      setDownloadingIds(prev => new Set(prev).add(sinifId))
+
+      const doc = await pdfViewerService.getPdfByClass(sinifId, 'ders-programi')
+      const filename = generateFilename(doc)
+      await downloadPdf(doc.url, filename)
+
+    } catch (error) {
+      console.error('Download error:', error)
+      // Here you might want to show a toast notification
+    } finally {
+      setDownloadingIds(prev => {
+        const next = new Set(prev)
+        next.delete(sinifId)
+        return next
+      })
+    }
   }
 
   return (
@@ -115,8 +138,8 @@ export default function SinifDersProgramiPage() {
                     </td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${schedule.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-700'
                         }`}>
                         {schedule.status === 'active' ? 'Aktif' : 'Pasif'}
                       </span>
@@ -126,13 +149,23 @@ export default function SinifDersProgramiPage() {
                         <button
                           onClick={() => handleViewSchedule(schedule.sinifId)}
                           className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                          title="Görüntüle"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button className="rounded-lg p-2 text-green-600 hover:bg-green-50">
-                          <Download className="h-4 w-4" />
+                        <button
+                          onClick={() => handleDirectDownload(schedule.sinifId)}
+                          disabled={downloadingIds.has(schedule.sinifId)}
+                          className="rounded-lg p-2 text-green-600 hover:bg-green-50 disabled:opacity-50"
+                          title="İndir"
+                        >
+                          {downloadingIds.has(schedule.sinifId) ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Download className="h-4 w-4" />
+                          )}
                         </button>
-                        <button className="rounded-lg p-2 text-red-600 hover:bg-red-50">
+                        <button className="rounded-lg p-2 text-red-600 hover:bg-red-50" title="Sil">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
