@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Download, ChevronDown, Search, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AddBalanceDialog } from '@/components/admin/bakiye/AddBalanceDialog'
 
 // Mock data
 const MOCK_STUDENTS = [
@@ -79,6 +80,33 @@ export default function BakiyeYonetimiPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedClass, setSelectedClass] = useState('Tüm Sınıflar')
   const [showClassDropdown, setShowClassDropdown] = useState(false)
+  const [isAddBalanceOpen, setIsAddBalanceOpen] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+
+  const handleResetFilters = () => {
+    setSearchQuery('')
+    setSelectedClass('Tüm Sınıflar')
+  }
+
+  const filteredStudents = MOCK_STUDENTS.filter(student => {
+    // Sınıf Filtresi
+    if (selectedClass !== 'Tüm Sınıflar' && student.class !== selectedClass) {
+      return false
+    }
+
+    // Arama Filtresi
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      // Note: student.class is used for class filter, but searching might also optionally cover it. 
+      // Usually user expects name or ID.
+      return (
+        student.studentName.toLowerCase().includes(query) ||
+        student.studentId.includes(query)
+      )
+    }
+
+    return true
+  })
 
   return (
     <div className="space-y-6">
@@ -168,8 +196,8 @@ export default function BakiyeYonetimiPage() {
 
                 {showClassDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowClassDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
@@ -206,12 +234,10 @@ export default function BakiyeYonetimiPage() {
             {RECENT_TRANSACTIONS.map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                    transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    <span className={`text-lg font-bold ${
-                      transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
                     }`}>
+                    <span className={`text-lg font-bold ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                      }`}>
                       {transaction.type === 'credit' ? '+' : '-'}
                     </span>
                   </div>
@@ -222,9 +248,8 @@ export default function BakiyeYonetimiPage() {
                     </p>
                   </div>
                 </div>
-                <p className={`text-sm font-bold ${
-                  transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <p className={`text-sm font-bold ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                  }`}>
                   {transaction.amount}
                 </p>
               </div>
@@ -237,7 +262,10 @@ export default function BakiyeYonetimiPage() {
       <div className="rounded-xl border bg-white shadow-sm">
         <div className="flex items-center justify-between border-b p-6">
           <h2 className="text-lg font-semibold">Öğrenci Listesi</h2>
-          <button className="text-sm font-medium text-muted-foreground hover:text-primary">
+          <button
+            onClick={handleResetFilters}
+            className="text-sm font-medium text-muted-foreground hover:text-primary"
+          >
             Filtreleri Temizle
           </button>
         </div>
@@ -264,51 +292,70 @@ export default function BakiyeYonetimiPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_STUDENTS.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  {/* Öğrenci */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${student.avatarColor} text-sm font-semibold text-white`}>
-                        {student.avatar}
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <tr key={student.id} className="hover:bg-gray-50">
+                    {/* Öğrenci */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${student.avatarColor} text-sm font-semibold text-white`}>
+                          {student.avatar}
+                        </div>
+                        <div>
+                          <p className="font-medium">{student.studentName}</p>
+                          <p className="text-sm text-muted-foreground">#{student.studentId}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{student.studentName}</p>
-                        <p className="text-sm text-muted-foreground">#{student.studentId}</p>
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Sınıf */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm">{student.class}</p>
-                  </td>
+                    {/* Sınıf */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm">{student.class}</p>
+                    </td>
 
-                  {/* Son İşlem */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-medium">{student.lastTransaction}</p>
-                    <p className="text-xs text-muted-foreground">{student.transactionDate}</p>
-                  </td>
+                    {/* Son İşlem */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-medium">{student.lastTransaction}</p>
+                      <p className="text-xs text-muted-foreground">{student.transactionDate}</p>
+                    </td>
 
-                  {/* Bakiye */}
-                  <td className="px-6 py-4">
-                    <p className={`text-lg font-bold ${student.balanceColor || ''}`}>
-                      {student.balance}
-                    </p>
-                  </td>
+                    {/* Bakiye */}
+                    <td className="px-6 py-4">
+                      <p className={`text-lg font-bold ${student.balanceColor || ''}`}>
+                        {student.balance}
+                      </p>
+                    </td>
 
-                  {/* İşlem */}
-                  <td className="px-6 py-4">
-                    <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-                      <CreditCard className="h-4 w-4" />
-                    </button>
+                    {/* İşlem */}
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => {
+                          setSelectedStudent(student)
+                          setIsAddBalanceOpen(true)
+                        }}
+                        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                    Kayıt bulunamadı
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
       </div>
+      <AddBalanceDialog
+        open={isAddBalanceOpen}
+        onOpenChange={setIsAddBalanceOpen}
+        student={selectedStudent}
+      />
     </div>
   )
 }

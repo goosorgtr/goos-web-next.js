@@ -5,6 +5,9 @@ import { Eye, Edit, ChevronDown, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { GradeDetailDialog } from '@/components/admin/notlar/GradeDetailDialog'
+import { EditGradeDialog } from '@/components/admin/notlar/EditGradeDialog'
+
 
 // Mock data
 const MOCK_GRADES = [
@@ -16,7 +19,9 @@ const MOCK_GRADES = [
     avatarColor: 'bg-blue-500',
     assessment: 'Ara Sınav',
     score: 85,
-    maxScore: 100
+    maxScore: 100,
+    class: '10-A Sınıfı',
+    subject: 'Matematik'
   },
   {
     id: '2',
@@ -26,7 +31,9 @@ const MOCK_GRADES = [
     avatarColor: 'bg-purple-500',
     assessment: 'Dönem Projesi',
     score: 92,
-    maxScore: 100
+    maxScore: 100,
+    class: '10-A Sınıfı',
+    subject: 'Fizik'
   },
   {
     id: '3',
@@ -36,7 +43,9 @@ const MOCK_GRADES = [
     avatarColor: 'bg-orange-500',
     assessment: 'Laboratuvar Raporu 3',
     score: null,
-    maxScore: 50
+    maxScore: 50,
+    class: '9-B Sınıfı',
+    subject: 'Kimya'
   },
   {
     id: '4',
@@ -46,30 +55,67 @@ const MOCK_GRADES = [
     avatarColor: 'bg-green-500',
     assessment: 'Okuma Sınavı',
     score: 18,
-    maxScore: 20
+    maxScore: 20,
+    class: '11-A Sınıfı',
+    subject: 'İngilizce'
   }
 ]
 
 const CLASSES = ['9-A Sınıfı', '9-B Sınıfı', '10-A Sınıfı', '10-B Sınıfı', '11-A Sınıfı']
+const CLASS_GRADES = ['9. Sınıf', '10. Sınıf', '11. Sınıf', '12. Sınıf']
 const SUBJECTS = ['Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Türkçe', 'İngilizce']
 const BRANCHES = ['A', 'B', 'C', 'D', 'E', 'F']
 
 export default function DersNotlariPage() {
+  const [grades, setGrades] = useState(MOCK_GRADES)
   const [selectedClass, setSelectedClass] = useState('10-A Sınıfı')
   const [selectedSubject, setSelectedSubject] = useState('Matematik')
   const [selectedBranch, setSelectedBranch] = useState('')
   const [selectedUploadClass, setSelectedUploadClass] = useState('')
+  const [selectedUploadSubject, setSelectedUploadSubject] = useState('')
   const [studentSearch, setStudentSearch] = useState('')
   const [showClassDropdown, setShowClassDropdown] = useState(false)
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false)
   const [showUploadClassDropdown, setShowUploadClassDropdown] = useState(false)
+  const [showUploadSubjectDropdown, setShowUploadSubjectDropdown] = useState(false)
   const [showBranchDropdown, setShowBranchDropdown] = useState(false)
 
+  // Dialog states
+  const [selectedGrade, setSelectedGrade] = useState<any>(null)
+  const [isViewOpen, setIsViewOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+
+  const handleSaveGrade = (gradeId: string, newScore: number | null) => {
+    setGrades(currentGrades =>
+      currentGrades.map(g =>
+        g.id === gradeId ? { ...g, score: newScore } : g
+      )
+    )
+  }
+
   const handleReset = () => {
-    setSelectedClass('10-A Sınıfı')
-    setSelectedSubject('Matematik')
+    setSelectedClass('')
+    setSelectedSubject('')
     setStudentSearch('')
   }
+
+  const filteredGrades = grades.filter(grade => {
+    // Sınıf filtresi
+    if (selectedClass && grade.class !== selectedClass) return false
+
+    // Ders filtresi
+    if (selectedSubject && grade.subject !== selectedSubject) return false
+
+    // Öğrenci arama filtresi
+    if (studentSearch) {
+      const searchLower = studentSearch.toLowerCase()
+      const nameMatch = grade.studentName.toLowerCase().includes(searchLower)
+      const idMatch = grade.studentId.includes(searchLower)
+      if (!nameMatch && !idMatch) return false
+    }
+
+    return true
+  })
 
   return (
     <div className="space-y-6">
@@ -95,14 +141,16 @@ export default function DersNotlariPage() {
                   onClick={() => setShowClassDropdown(!showClassDropdown)}
                   className="flex w-full items-center justify-between rounded-lg border bg-white px-4 py-2.5 text-left text-sm hover:bg-gray-50"
                 >
-                  <span>{selectedClass}</span>
+                  <span className={selectedClass ? '' : 'text-muted-foreground'}>
+                    {selectedClass || 'Tüm Sınıflar'}
+                  </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </button>
 
                 {showClassDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowClassDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
@@ -132,14 +180,16 @@ export default function DersNotlariPage() {
                   onClick={() => setShowSubjectDropdown(!showSubjectDropdown)}
                   className="flex w-full items-center justify-between rounded-lg border bg-white px-4 py-2.5 text-left text-sm hover:bg-gray-50"
                 >
-                  <span>{selectedSubject}</span>
+                  <span className={selectedSubject ? '' : 'text-muted-foreground'}>
+                    {selectedSubject || 'Tüm Dersler'}
+                  </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </button>
 
                 {showSubjectDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowSubjectDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
@@ -207,12 +257,12 @@ export default function DersNotlariPage() {
 
                 {showUploadClassDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowUploadClassDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
-                      {CLASSES.map((cls) => (
+                      {CLASS_GRADES.map((cls) => (
                         <button
                           key={cls}
                           onClick={() => {
@@ -230,24 +280,24 @@ export default function DersNotlariPage() {
               </div>
             </div>
 
-            {/* Branş Seç */}
+            {/* Şube Seç */}
             <div className="space-y-2">
-              <Label className="text-xs font-medium uppercase text-muted-foreground">BRANŞ SEÇ</Label>
+              <Label className="text-xs font-medium uppercase text-muted-foreground">ŞUBE SEÇ</Label>
               <div className="relative">
                 <button
                   onClick={() => setShowBranchDropdown(!showBranchDropdown)}
                   className="flex w-full items-center justify-between rounded-lg border bg-white px-4 py-2.5 text-left text-sm hover:bg-gray-50"
                 >
                   <span className={selectedBranch ? '' : 'text-muted-foreground'}>
-                    {selectedBranch || 'Branş seçin...'}
+                    {selectedBranch || 'Şube seçin...'}
                   </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </button>
 
                 {showBranchDropdown && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowBranchDropdown(false)}
                     />
                     <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-lg border bg-white shadow-lg">
@@ -261,6 +311,45 @@ export default function DersNotlariPage() {
                           className="flex w-full items-center px-4 py-2.5 text-left text-sm hover:bg-gray-50"
                         >
                           {branch}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Ders Seç (Upload) */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium uppercase text-muted-foreground">DERS SEÇ</Label>
+              <div className="relative">
+                <button
+                  onClick={() => setShowUploadSubjectDropdown(!showUploadSubjectDropdown)}
+                  className="flex w-full items-center justify-between rounded-lg border bg-white px-4 py-2.5 text-left text-sm hover:bg-gray-50"
+                >
+                  <span className={selectedUploadSubject ? '' : 'text-muted-foreground'}>
+                    {selectedUploadSubject || 'Ders seçin...'}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </button>
+
+                {showUploadSubjectDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowUploadSubjectDropdown(false)}
+                    />
+                    <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
+                      {SUBJECTS.map((subject) => (
+                        <button
+                          key={subject}
+                          onClick={() => {
+                            setSelectedUploadSubject(subject)
+                            setShowUploadSubjectDropdown(false)
+                          }}
+                          className="flex w-full items-center px-4 py-2.5 text-left text-sm hover:bg-gray-50"
+                        >
+                          {subject}
                         </button>
                       ))}
                     </div>
@@ -316,6 +405,12 @@ export default function DersNotlariPage() {
                   Öğrenci
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Sınıf
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Branş
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Değerlendirme
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -324,54 +419,84 @@ export default function DersNotlariPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_GRADES.map((grade) => (
-                <tr key={grade.id} className="hover:bg-gray-50">
-                  {/* İşlemler */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="rounded-lg p-2 text-blue-600 hover:bg-blue-50">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="rounded-lg p-2 text-gray-600 hover:bg-gray-100">
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-
-                  {/* Öğrenci */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${grade.avatarColor} text-sm font-semibold text-white`}>
-                        {grade.avatar}
+              {filteredGrades.length > 0 ? (
+                filteredGrades.map((grade) => (
+                  <tr key={grade.id} className="hover:bg-gray-50">
+                    {/* İşlemler */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedGrade(grade)
+                            setIsViewOpen(true)
+                          }}
+                          className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedGrade(grade)
+                            setIsEditOpen(true)
+                          }}
+                          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
                       </div>
-                      <div>
-                        <p className="font-medium">{grade.studentName}</p>
-                        <p className="text-sm text-muted-foreground">ID: {grade.studentId}</p>
+                    </td>
+
+                    {/* Öğrenci */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${grade.avatarColor} text-sm font-semibold text-white`}>
+                          {grade.avatar}
+                        </div>
+                        <div>
+                          <p className="font-medium">{grade.studentName}</p>
+                          <p className="text-sm text-muted-foreground">ID: {grade.studentId}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Değerlendirme */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm">{grade.assessment}</p>
-                  </td>
+                    {/* Sınıf */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-medium text-gray-900">{grade.class}</p>
+                    </td>
 
-                  {/* Puan */}
-                  <td className="px-6 py-4">
-                    <p className="text-lg font-bold">
-                      {grade.score !== null ? (
-                        <>
-                          {grade.score} <span className="text-sm font-normal text-muted-foreground">/{grade.maxScore}</span>
-                        </>
-                      ) : (
-                        <>
-                          - <span className="text-sm font-normal text-muted-foreground">/{grade.maxScore}</span>
-                        </>
-                      )}
-                    </p>
+                    {/* Branş */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-700">{grade.subject}</p>
+                    </td>
+
+                    {/* Değerlendirme */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm">{grade.assessment}</p>
+                    </td>
+
+                    {/* Puan */}
+                    <td className="px-6 py-4">
+                      <p className="text-lg font-bold">
+                        {grade.score !== null ? (
+                          <>
+                            {grade.score} <span className="text-sm font-normal text-muted-foreground">/{grade.maxScore}</span>
+                          </>
+                        ) : (
+                          <>
+                            - <span className="text-sm font-normal text-muted-foreground">/{grade.maxScore}</span>
+                          </>
+                        )}
+                      </p>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                    Kayıt bulunamadı
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -382,6 +507,18 @@ export default function DersNotlariPage() {
           </button>
         </div>
       </div>
+      <GradeDetailDialog
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        grade={selectedGrade}
+      />
+
+      <EditGradeDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        grade={selectedGrade}
+        onSave={handleSaveGrade}
+      />
     </div>
   )
 }
