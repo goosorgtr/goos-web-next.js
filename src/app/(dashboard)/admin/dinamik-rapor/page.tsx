@@ -12,19 +12,22 @@ const MOCK_REPORTS = [
     id: '1',
     name: 'Ekim Ayı Devamsızlık Raporu',
     createdAt: '25 Eki 2023, 10:23',
-    createdBy: 'Admin'
+    createdBy: 'Admin',
+    query: 'SELECT * FROM devamsizlik_kayitlari WHERE tarih >= "2023-10-01"'
   },
   {
     id: '2',
     name: 'Kantin 3. Çeyrek Satışları',
     createdAt: '24 Eki 2023, 16:15',
-    createdBy: 'Admin'
+    createdBy: 'Admin',
+    query: 'SELECT sum(tutar) FROM satislar WHERE donem = "3"'
   },
   {
     id: '3',
     name: 'Eylül Ayı Servis Kayıtları',
     createdAt: '20 Eki 2023, 09:00',
-    createdBy: 'Admin'
+    createdBy: 'Admin',
+    query: 'SELECT * FROM servis_kayitlari WHERE ay = "Eylül"'
   }
 ]
 
@@ -37,9 +40,36 @@ export default function DinamikRaporPage() {
     d.tarih
 FROM
     devamsizlik_kayitlari d`)
+  const [reports, setReports] = useState(MOCK_REPORTS)
 
   const handleGenerateReport = () => {
+    // Yeni rapor ekleme simülasyonu
+    const newReport = {
+      id: Date.now().toString(),
+      name: reportTitle || 'Yeni Rapor',
+      createdAt: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      createdBy: 'Admin',
+      query: sqlQuery
+    }
+    setReports([newReport, ...reports])
     console.log('Generating report:', reportTitle, sqlQuery)
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm('Bu raporu silmek istediğinize emin misiniz?')) {
+      setReports(reports.filter(r => r.id !== id))
+    }
+  }
+
+  const handleEdit = (report: any) => {
+    setReportTitle(report.name)
+    setSqlQuery(report.query || '')
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDownload = (report: any) => {
+    alert(`${report.name} indiriliyor...`)
   }
 
   return (
@@ -134,7 +164,7 @@ FROM
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_REPORTS.map((report) => (
+              {reports.map((report) => (
                 <tr key={report.id} className="hover:bg-gray-50">
                   {/* Rapor Adı */}
                   <td className="px-6 py-4">
@@ -155,15 +185,27 @@ FROM
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       {/* İndir */}
-                      <button className="rounded-lg p-2 text-blue-600 hover:bg-blue-50">
+                      <button
+                        onClick={() => handleDownload(report)}
+                        className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                        title="İndir"
+                      >
                         <Download className="h-4 w-4" />
                       </button>
                       {/* Düzenle */}
-                      <button className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50">
+                      <button
+                        onClick={() => handleEdit(report)}
+                        className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50"
+                        title="Düzenle (Forma Doldur)"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
                       {/* Sil */}
-                      <button className="rounded-lg p-2 text-red-600 hover:bg-red-50">
+                      <button
+                        onClick={() => handleDelete(report.id)}
+                        className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                        title="Sil"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
