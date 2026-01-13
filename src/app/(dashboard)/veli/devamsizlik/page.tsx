@@ -15,6 +15,16 @@ import {
     Filter
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
+import { DateRange } from 'react-day-picker'
+import { Calendar } from '@/components/ui/calendar'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
 
 const children = [
     { id: 1, name: 'Can Yılmaz', class: '10-A' },
@@ -67,6 +77,10 @@ const calendarDays = [
 
 export default function VeliDevamsizlikPage() {
     const [selectedChild, setSelectedChild] = useState(children[0])
+    const [date, setDate] = useState<DateRange | undefined>({
+        from: new Date(2023, 9, 1),
+        to: new Date(2023, 9, 31),
+    })
 
     return (
         <div className="flex flex-col gap-6 p-6 font-sans bg-[#F8FAFC]">
@@ -103,23 +117,48 @@ export default function VeliDevamsizlikPage() {
                     </div>
                 </div>
 
-                <div>
+                <div className="md:col-span-2">
                     <label className="block text-sm font-bold text-gray-700 mb-2">Tarih Aralığı</label>
                     <div className="relative">
-                        <button className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none hover:bg-gray-50 transition-all">
-                            <span>Ekim 2023</span>
-                            <CalendarIcon className="h-5 w-5 text-gray-400" />
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Durum</label>
-                    <div className="relative">
-                        <button className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 outline-none hover:bg-gray-50 transition-all">
-                            <span>Tümü</span>
-                            <Filter className="h-5 w-5 text-gray-400" />
-                        </button>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-between text-left font-semibold border-gray-200 rounded-xl px-4 py-6 text-sm hover:bg-gray-50 bg-white",
+                                        !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <CalendarIcon className="h-4 w-4 text-gray-400" />
+                                        {date?.from ? (
+                                            date.to ? (
+                                                <>
+                                                    {format(date.from, "d LLL y", { locale: tr })} -{" "}
+                                                    {format(date.to, "d LLL y", { locale: tr })}
+                                                </>
+                                            ) : (
+                                                format(date.from, "d LLL y", { locale: tr })
+                                            )
+                                        ) : (
+                                            <span>Tarih seçin</span>
+                                        )}
+                                    </div>
+                                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    initialFocus
+                                    mode="range"
+                                    defaultMonth={date?.from}
+                                    selected={date}
+                                    onSelect={setDate}
+                                    numberOfMonths={2}
+                                    locale={tr}
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
             </div>
@@ -207,7 +246,6 @@ export default function VeliDevamsizlikPage() {
                             <thead className="bg-gray-50/50">
                                 <tr>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">TARİH</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">DURUM</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">GİRİŞ / ÇIKIŞ</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">AÇIKLAMA</th>
                                 </tr>
@@ -218,15 +256,6 @@ export default function VeliDevamsizlikPage() {
                                         <td className="px-6 py-6">
                                             <p className="text-sm font-bold text-gray-900">{item.date}</p>
                                             <p className="text-xs font-medium text-gray-400 mt-0.5">{item.day}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className={cn(
-                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold",
-                                                item.type === 'negative' && "bg-red-50 text-red-600"
-                                            )}>
-                                                {item.status === 'Yok' && <X className="h-3 w-3" />}
-                                                {item.status}
-                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-bold text-gray-400">
                                             {item.checkInOut}

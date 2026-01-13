@@ -17,6 +17,23 @@ import {
     Wallet
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
+import { DateRange } from 'react-day-picker'
+import { Calendar } from '@/components/ui/calendar'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 const children = [
     { id: 1, name: 'Ali Yılmaz', class: '5-A', initials: 'A' },
@@ -78,6 +95,23 @@ const transactions = [
 
 export default function BakiyeBilgisiPage() {
     const [selectedChild, setSelectedChild] = useState(children[0])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedType, setSelectedType] = useState('Tümü')
+    const [date, setDate] = useState<DateRange | undefined>()
+
+    const transactionTypes = ['Tümü', 'Bakiye Yükleme', 'Kantin Harcaması']
+
+    const filteredTransactions = transactions.filter(tx => {
+        const matchesSearch = tx.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            tx.description.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesType = selectedType === 'Tümü' || tx.type === selectedType
+
+        // Mock filtering for date range - in a real app would use ISO dates
+        const matchesDate = !date?.from || true
+
+        return matchesSearch && matchesType && matchesDate
+    })
 
     return (
         <div className="flex flex-col gap-6 p-6 font-sans bg-[#F9FAFB]">
@@ -198,15 +232,66 @@ export default function BakiyeBilgisiPage() {
 
                 {/* Right Column: Transaction History */}
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-8 flex items-center justify-between border-b border-gray-50">
+                    <div className="p-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-gray-50">
                         <h3 className="text-xl font-black text-gray-900">Hesap Hareketleri</h3>
-                        <div className="flex items-center gap-3">
-                            <button className="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-black text-gray-600 shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
-                                Son 30 Gün <ChevronDown className="h-3 w-3" />
-                            </button>
-                            <button className="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-black text-gray-600 shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
-                                <Filter className="h-3 w-3" /> Filtrele
-                            </button>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative min-w-[200px]">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="İşlem ara..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-gray-50 border-transparent border focus:bg-white focus:border-primary/20 rounded-xl py-2 pl-10 pr-4 text-xs font-semibold outline-none transition-all shadow-inner"
+                                />
+                            </div>
+
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "justify-start text-left font-bold bg-white border-gray-100 py-2 px-4 rounded-xl shadow-sm text-xs h-9",
+                                            !date && "text-gray-400"
+                                        )}
+                                    >
+                                        <Filter className="mr-2 h-3 w-3" />
+                                        {date?.from ? (
+                                            date.to ? (
+                                                <>
+                                                    {format(date.from, "d LLL", { locale: tr })} - {format(date.to, "d LLL", { locale: tr })}
+                                                </>
+                                            ) : (
+                                                format(date.from, "d LLL", { locale: tr })
+                                            )
+                                        ) : (
+                                            <span>Tarih Aralığı</span>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="end">
+                                    <Calendar
+                                        initialFocus
+                                        mode="range"
+                                        defaultMonth={date?.from}
+                                        selected={date}
+                                        onSelect={setDate}
+                                        numberOfMonths={2}
+                                        locale={tr}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+
+                            <Select value={selectedType} onValueChange={setSelectedType}>
+                                <SelectTrigger className="w-[140px] h-9 bg-white border-gray-100 rounded-xl shadow-sm text-xs font-bold text-gray-900 px-4">
+                                    <SelectValue placeholder="İşlem Türü" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {transactionTypes.map(type => (
+                                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
@@ -222,46 +307,58 @@ export default function BakiyeBilgisiPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {transactions.map((tx) => (
-                                    <tr key={tx.id} className="hover:bg-gray-50/40 transition-colors group">
-                                        <td className="px-6 py-6">
-                                            <p className="text-sm font-black text-gray-800">{tx.date}</p>
-                                        </td>
-                                        <td className="px-6 py-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className={cn(
-                                                    "h-10 w-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
-                                                    tx.isPositive ? "bg-orange-50 text-orange-600" : "bg-red-50 text-red-600"
-                                                )}>
-                                                    {tx.isPositive ? <Plus className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+                                {filteredTransactions.length > 0 ? (
+                                    filteredTransactions.map((tx) => (
+                                        <tr key={tx.id} className="hover:bg-gray-50/40 transition-colors group">
+                                            <td className="px-6 py-6">
+                                                <p className="text-sm font-black text-gray-800">{tx.date}</p>
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={cn(
+                                                        "h-10 w-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
+                                                        tx.isPositive ? "bg-orange-50 text-orange-600" : "bg-red-50 text-red-600"
+                                                    )}>
+                                                        {tx.isPositive ? <Plus className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+                                                    </div>
+                                                    <span className="text-sm font-black text-gray-800">{tx.type}</span>
                                                 </div>
-                                                <span className="text-sm font-black text-gray-800">{tx.type}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-6">
-                                            <p className="text-sm font-semibold text-gray-500 max-w-[180px] leading-snug">{tx.description}</p>
-                                        </td>
-                                        <td className="px-6 py-6 text-center">
-                                            <span className={cn(
-                                                "text-sm font-black tracking-tight",
-                                                tx.isPositive ? "text-green-600" : "text-gray-900"
-                                            )}>
-                                                {tx.isPositive ? '+' : '-'}₺{tx.amount.toFixed(2)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-6">
-                                            <div className="flex justify-center">
-                                                <div className={cn(
-                                                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black ring-1 ring-inset",
-                                                    tx.statusColor === 'orange' ? "bg-orange-50 text-orange-600 ring-orange-100" : "bg-green-50 text-green-600 ring-green-100"
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <p className="text-sm font-semibold text-gray-500 max-w-[180px] leading-snug">{tx.description}</p>
+                                            </td>
+                                            <td className="px-6 py-6 text-center">
+                                                <span className={cn(
+                                                    "text-sm font-black tracking-tight",
+                                                    tx.isPositive ? "text-green-600" : "text-gray-900"
                                                 )}>
-                                                    <div className={cn("h-1.5 w-1.5 rounded-full", tx.statusColor === 'orange' ? "bg-orange-500 animate-pulse" : "bg-green-500")} />
-                                                    {tx.status}
+                                                    {tx.isPositive ? '+' : '-'}₺{tx.amount.toFixed(2)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <div className="flex justify-center">
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black ring-1 ring-inset",
+                                                        tx.statusColor === 'orange' ? "bg-orange-50 text-orange-600 ring-orange-100" : "bg-green-50 text-green-600 ring-green-100"
+                                                    )}>
+                                                        <div className={cn("h-1.5 w-1.5 rounded-full", tx.statusColor === 'orange' ? "bg-orange-500 animate-pulse" : "bg-green-500")} />
+                                                        {tx.status}
+                                                    </div>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="py-20 text-center">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <Wallet className="h-12 w-12 text-gray-200 mb-4" />
+                                                <p className="text-xl font-black text-gray-400">İşlem Bulunamadı</p>
+                                                <p className="text-sm font-bold text-gray-400 mt-1">Filtreleri değiştirerek tekrar deneyebilirsiniz.</p>
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

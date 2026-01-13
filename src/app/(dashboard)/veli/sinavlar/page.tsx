@@ -5,14 +5,32 @@ import {
     Search,
     ChevronDown,
     ChevronRight,
-    Calendar,
+    Calendar as CalendarIcon,
     Filter,
     CheckCircle2,
     Clock,
     User,
-    GraduationCap
+    GraduationCap,
+    BookOpen
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
+import { DateRange } from 'react-day-picker'
+import { Calendar } from '@/components/ui/calendar'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 const children = [
     { id: 1, name: 'Ali Yılmaz', class: '5-A', initials: 'A', active: true },
@@ -27,8 +45,8 @@ const exams = [
         code: 'MAT101',
         date: '14 Kasım 2023',
         time: '09:30 - 11:00',
-        status: 'Yaklaşıyor (2 Gün)',
-        statusType: 'upcoming',
+        status: 'Planlandı',
+        statusType: 'planned',
         color: 'bg-blue-500'
     },
     {
@@ -79,6 +97,25 @@ const exams = [
 
 export default function VeliSinavlarPage() {
     const [selectedChild, setSelectedChild] = useState(children[0])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedSubject, setSelectedSubject] = useState('Tüm Dersler')
+    const [date, setDate] = useState<DateRange | undefined>()
+
+    const subjects = ['Tüm Dersler', ...Array.from(new Set(exams.map(e => e.subject)))]
+
+    const filteredExams = exams.filter(exam => {
+        const matchesSearch = exam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            exam.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            exam.code.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesSubject = selectedSubject === 'Tüm Dersler' || exam.subject === selectedSubject
+
+        // Mock filtering for date range since dates are strings
+        // In a real app, you'd parse these strings or have ISO dates in the data
+        const matchesDate = !date?.from || true // Logic placeholder
+
+        return matchesSearch && matchesSubject && matchesDate
+    })
 
     return (
         <div className="flex flex-col gap-8 p-8 font-sans bg-[#F9FAFB]">
@@ -132,24 +169,69 @@ export default function VeliSinavlarPage() {
                     <input
                         type="text"
                         placeholder="Ders veya Sınav Ara"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-gray-50 border-transparent border focus:bg-white focus:border-primary/20 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold outline-none transition-all shadow-inner"
                     />
                 </div>
 
-                <div className="flex items-center gap-3 rounded-2xl bg-gray-50 border border-transparent hover:bg-white hover:border-primary/20 px-4 py-3.5 min-w-[220px] shadow-inner cursor-pointer transition-all group">
-                    <Calendar className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
-                    <span className="text-sm font-bold text-gray-600 flex-1">Tarih aralığı seç</span>
+                <div className="min-w-[240px]">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full justify-start text-left font-bold bg-gray-50 border-transparent hover:bg-white hover:border-primary/20 py-[1.65rem] px-5 rounded-2xl shadow-inner",
+                                    !date && "text-gray-400"
+                                )}
+                            >
+                                <CalendarIcon className="mr-3 h-5 w-5" />
+                                {date?.from ? (
+                                    date.to ? (
+                                        <span className="text-gray-600 text-sm">
+                                            {format(date.from, "d LLL", { locale: tr })} - {format(date.to, "d LLL", { locale: tr })}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-600 text-sm">{format(date.from, "d LLL", { locale: tr })}</span>
+                                    )
+                                ) : (
+                                    <span className="text-sm">Tarih aralığı seç</span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={date?.from}
+                                selected={date}
+                                onSelect={setDate}
+                                numberOfMonths={2}
+                                locale={tr}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-2xl bg-white border border-gray-200 px-5 py-3.5 min-w-[160px] shadow-sm cursor-pointer hover:bg-gray-50 transition-all">
-                    <span className="text-sm font-bold text-gray-900 flex-1">Tüm Dersler</span>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
+                <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                    <SelectTrigger className="md:w-[180px] h-[3.5rem] bg-white border-gray-200 rounded-2xl shadow-sm text-sm font-bold text-gray-900 px-5">
+                        <SelectValue placeholder="Tüm Dersler" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {subjects.map(subject => (
+                            <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
-                <div className="flex items-center gap-3 rounded-2xl bg-white border border-gray-200 px-5 py-3.5 min-w-[160px] shadow-sm cursor-pointer hover:bg-gray-50 transition-all">
+                <Button
+                    variant="ghost"
+                    onClick={() => setDate(undefined)}
+                    className="flex items-center gap-3 rounded-2xl bg-white border border-gray-200 px-5 py-[1.65rem] min-w-[160px] shadow-sm cursor-pointer hover:bg-gray-50 transition-all"
+                >
                     <span className="text-sm font-bold text-gray-900 flex-1">Tüm Tarihler</span>
                     <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
+                </Button>
             </div>
 
             {/* Exams Table */}
@@ -166,52 +248,63 @@ export default function VeliSinavlarPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {exams.map((exam) => (
-                                <tr key={exam.id} className={cn(
-                                    "hover:bg-gray-50/50 transition-all group",
-                                    exam.statusType === 'completed' && "opacity-60"
-                                )}>
-                                    <td className="px-10 py-7">
-                                        <div className="flex items-center gap-4">
-                                            <div className={cn("h-2.5 w-2.5 rounded-full ring-4 shadow-sm", exam.color, exam.statusType === 'completed' ? "ring-gray-100" : "ring-gray-100/50")} />
-                                            <span className={cn(
-                                                "text-lg font-black tracking-tight group-hover:translate-x-1 transition-transform",
-                                                exam.statusType === 'completed' ? "text-gray-400 line-through decoration-2" : "text-gray-900"
-                                            )}>
-                                                {exam.name}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-10 py-7">
-                                        <div>
-                                            <p className="text-base font-black text-gray-800">{exam.subject}</p>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter mt-0.5">{exam.code}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-10 py-7 text-center">
-                                        <span className="text-base font-bold text-gray-600">{exam.date}</span>
-                                    </td>
-                                    <td className="px-10 py-7 text-center">
-                                        <div className="inline-flex items-center gap-2 text-primary font-bold">
-                                            <Clock className="h-4 w-4" />
-                                            <span className="text-base">{exam.time}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-10 py-7">
-                                        <div className="flex justify-center">
-                                            <div className={cn(
-                                                "inline-flex items-center gap-2 px-5 py-2 rounded-2xl text-xs font-black shadow-sm transition-all",
-                                                exam.statusType === 'upcoming' && "bg-[#FFF7ED] text-[#EA580C] ring-1 ring-[#FFEDD5] scale-105 shadow-[#EA580C]/5",
-                                                exam.statusType === 'planned' && "bg-[#F0F9FF] text-[#0284C7] ring-1 ring-[#E0F2FE]",
-                                                exam.statusType === 'completed' && "bg-[#F0FDF4] text-[#16A34A] ring-1 ring-[#DCFCE7]"
-                                            )}>
-                                                {exam.statusType === 'completed' && <CheckCircle2 className="h-4 w-4" />}
-                                                {exam.status}
+                            {filteredExams.length > 0 ? (
+                                filteredExams.map((exam) => (
+                                    <tr key={exam.id} className={cn(
+                                        "hover:bg-gray-50/50 transition-all group",
+                                        exam.statusType === 'completed' && "opacity-60"
+                                    )}>
+                                        <td className="px-10 py-7">
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn("h-2.5 w-2.5 rounded-full ring-4 shadow-sm", exam.color, exam.statusType === 'completed' ? "ring-gray-100" : "ring-gray-100/50")} />
+                                                <span className={cn(
+                                                    "text-lg font-black tracking-tight group-hover:translate-x-1 transition-transform",
+                                                    exam.statusType === 'completed' ? "text-gray-400 line-through decoration-2" : "text-gray-900"
+                                                )}>
+                                                    {exam.name}
+                                                </span>
                                             </div>
+                                        </td>
+                                        <td className="px-10 py-7">
+                                            <div>
+                                                <p className="text-base font-black text-gray-800">{exam.subject}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter mt-0.5">{exam.code}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-7 text-center">
+                                            <span className="text-base font-bold text-gray-600">{exam.date}</span>
+                                        </td>
+                                        <td className="px-10 py-7 text-center">
+                                            <div className="inline-flex items-center gap-2 text-primary font-bold">
+                                                <Clock className="h-4 w-4" />
+                                                <span className="text-base">{exam.time}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-7">
+                                            <div className="flex justify-center">
+                                                <div className={cn(
+                                                    "inline-flex items-center gap-2 px-5 py-2 rounded-2xl text-xs font-black shadow-sm transition-all",
+                                                    exam.statusType === 'planned' && "bg-[#F0F9FF] text-[#0284C7] ring-1 ring-[#E0F2FE]",
+                                                    exam.statusType === 'completed' && "bg-[#F0FDF4] text-[#16A34A] ring-1 ring-[#DCFCE7]"
+                                                )}>
+                                                    {exam.statusType === 'completed' && <CheckCircle2 className="h-4 w-4" />}
+                                                    {exam.status}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="py-20 text-center">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <BookOpen className="h-12 w-12 text-gray-200 mb-4" />
+                                            <p className="text-xl font-black text-gray-400">Sınav Bulunamadı</p>
+                                            <p className="text-sm font-bold text-gray-400 mt-1">Filtreleri değiştirerek tekrar deneyebilirsiniz.</p>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

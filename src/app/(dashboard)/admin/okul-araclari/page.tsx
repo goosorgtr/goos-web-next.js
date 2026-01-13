@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, ChevronDown, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, ChevronDown, Edit, Trash2, LifeBuoy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AddVehicleDialog } from '@/components/admin/vehicles/AddVehicleDialog'
+import { AssignStudentDialog } from '@/components/admin/vehicles/AssignStudentDialog'
+import { EditVehicleDialog } from '@/components/admin/vehicles/EditVehicleDialog'
 
 // Mock data
 const MOCK_VEHICLES = [
@@ -13,7 +16,8 @@ const MOCK_VEHICLES = [
     model: 'Ford Transit',
     capacity: 16,
     driver: 'Ahmet Yılmaz',
-    status: 'active'
+    status: 'active',
+    studentIds: ['1', '2']
   },
   {
     id: '2',
@@ -21,7 +25,8 @@ const MOCK_VEHICLES = [
     model: 'Mercedes Sprinter',
     capacity: 20,
     driver: 'Fatma Kaya',
-    status: 'active'
+    status: 'active',
+    studentIds: ['3']
   },
   {
     id: '3',
@@ -29,7 +34,8 @@ const MOCK_VEHICLES = [
     model: 'Volkswagen Crafter',
     capacity: 18,
     driver: 'Mehmet Öztürk',
-    status: 'passive'
+    status: 'passive',
+    studentIds: []
   }
 ]
 
@@ -42,6 +48,41 @@ export default function OkulAraclariPage() {
   const [selectedDriver, setSelectedDriver] = useState('Tüm Şoförler')
   const [showStatusDropdown, setShowStatusDropdown] = useState(false)
   const [showDriverDropdown, setShowDriverDropdown] = useState(false)
+  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
+  const [isAssignStudentOpen, setIsAssignStudentOpen] = useState(false)
+  const [isEditVehicleOpen, setIsEditVehicleOpen] = useState(false)
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null)
+  const [selectedVehiclePlate, setSelectedVehiclePlate] = useState('')
+  const [vehicles, setVehicles] = useState(MOCK_VEHICLES)
+
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const matchesSearch =
+      vehicle.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.driver.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesStatus = selectedStatus === 'Tüm Durumlar' ||
+      (selectedStatus === 'Aktif' && vehicle.status === 'active') ||
+      (selectedStatus === 'Pasif' && vehicle.status === 'passive')
+
+    const matchesDriver = selectedDriver === 'Tüm Şoförler' || vehicle.driver === selectedDriver
+
+    return matchesSearch && matchesStatus && matchesDriver
+  })
+
+  const handleDelete = (id: string) => {
+    if (confirm('Bu aracı silmek istediğinize emin misiniz?')) {
+      setVehicles(vehicles.filter(v => v.id !== id))
+    }
+  }
+
+  const handleEditSave = (updatedVehicle: any) => {
+    setVehicles(vehicles.map(v => v.id === updatedVehicle.id ? updatedVehicle : v))
+  }
+
+  const handleAssignSave = (selectedIds: string[]) => {
+    setVehicles(vehicles.map(v => v.plate === selectedVehiclePlate ? { ...v, studentIds: selectedIds } : v))
+  }
 
   return (
     <div className="space-y-6">
@@ -60,7 +101,7 @@ export default function OkulAraclariPage() {
             Okul servis araçlarını tanımlayın, ekleyin, düzenleyin ve silin.
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsAddVehicleOpen(true)}>
           <Plus className="h-4 w-4" />
           Yeni Araç Ekle
         </Button>
@@ -91,8 +132,8 @@ export default function OkulAraclariPage() {
 
           {showStatusDropdown && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setShowStatusDropdown(false)}
               />
               <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border bg-white shadow-lg">
@@ -125,8 +166,8 @@ export default function OkulAraclariPage() {
 
           {showDriverDropdown && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setShowDriverDropdown(false)}
               />
               <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border bg-white shadow-lg">
@@ -175,63 +216,113 @@ export default function OkulAraclariPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {MOCK_VEHICLES.map((vehicle) => (
-                <tr key={vehicle.id} className="hover:bg-gray-50">
-                  {/* Araç Plakası */}
-                  <td className="px-6 py-4">
-                    <p className="font-medium">{vehicle.plate}</p>
-                  </td>
+              {filteredVehicles.length > 0 ? (
+                filteredVehicles.map((vehicle) => (
+                  <tr key={vehicle.id} className="hover:bg-gray-50">
+                    {/* Araç Plakası */}
+                    <td className="px-6 py-4">
+                      <p className="font-medium">{vehicle.plate}</p>
+                    </td>
 
-                  {/* Model */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-muted-foreground">{vehicle.model}</p>
-                  </td>
+                    {/* Model */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-muted-foreground">{vehicle.model}</p>
+                    </td>
 
-                  {/* Kapasite */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm">{vehicle.capacity}</p>
-                  </td>
+                    {/* Kapasite */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm">{vehicle.capacity}</p>
+                    </td>
 
-                  {/* Atanan Şoför */}
-                  <td className="px-6 py-4">
-                    <p className="text-sm">{vehicle.driver}</p>
-                  </td>
+                    {/* Atanan Şoför */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm">{vehicle.driver}</p>
+                    </td>
 
-                  {/* Durum */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${
-                        vehicle.status === 'active' ? 'bg-green-500' : 'bg-red-500'
-                      }`} />
-                      <span className="text-sm">
-                        {vehicle.status === 'active' ? 'Aktif' : 'Pasif'}
-                      </span>
-                    </div>
-                  </td>
+                    {/* Durum */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${vehicle.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                          }`} />
+                        <span className="text-sm">
+                          {vehicle.status === 'active' ? 'Aktif' : 'Pasif'}
+                        </span>
+                      </div>
+                    </td>
 
-                  {/* Eylemler */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {/* Öğrenci Ata */}
-                      <button className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-                        Öğrenci Ata
-                      </button>
-                      {/* Düzenle */}
-                      <button className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50">
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      {/* Sil */}
-                      <button className="rounded-lg p-2 text-red-600 hover:bg-red-50">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {/* Eylemler */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {/* Öğrenci Ata */}
+                        <button
+                          onClick={() => {
+                            setSelectedVehiclePlate(vehicle.plate)
+                            setIsAssignStudentOpen(true)
+                          }}
+                          className="rounded-lg p-2 text-primary hover:bg-primary/10 transition-colors"
+                          title="Öğrenci Ata (Dümen)"
+                        >
+                          <LifeBuoy className="h-5 w-5" />
+                        </button>
+                        {/* Düzenle */}
+                        <button
+                          onClick={() => {
+                            setSelectedVehicle(vehicle)
+                            setIsEditVehicleOpen(true)
+                          }}
+                          className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50"
+                          title="Düzenle"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        {/* Sil */}
+                        <button
+                          onClick={() => handleDelete(vehicle.id)}
+                          className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                          title="Sil"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-muted-foreground italic">
+                    Kayıt bulunamadı.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <AddVehicleDialog
+        open={isAddVehicleOpen}
+        onOpenChange={setIsAddVehicleOpen}
+        onSave={(newVehicle) => setVehicles([newVehicle, ...vehicles])}
+      />
+
+      <EditVehicleDialog
+        open={isEditVehicleOpen}
+        onOpenChange={setIsEditVehicleOpen}
+        vehicle={selectedVehicle}
+        onSave={handleEditSave}
+        onManageStudents={(plate) => {
+          setSelectedVehiclePlate(plate)
+          setIsAssignStudentOpen(true)
+        }}
+      />
+
+      <AssignStudentDialog
+        open={isAssignStudentOpen}
+        onOpenChange={setIsAssignStudentOpen}
+        vehiclePlate={selectedVehiclePlate}
+        initialSelected={vehicles.find(v => v.plate === selectedVehiclePlate)?.studentIds || []}
+        onSave={handleAssignSave}
+      />
     </div>
   )
 }

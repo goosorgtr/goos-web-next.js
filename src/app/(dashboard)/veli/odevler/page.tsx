@@ -60,6 +60,22 @@ const homeworks = [
 
 export default function VeliOdevlerPage() {
     const [selectedChild, setSelectedChild] = useState(children[0])
+    const [selectedPeriod, setSelectedPeriod] = useState('2023-2024 Güz')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedStatus, setSelectedStatus] = useState('Tüm Durumlar')
+    const [selectedSubject, setSelectedSubject] = useState('Tüm Dersler')
+
+    const subjects = ['Tüm Dersler', ...Array.from(new Set(homeworks.map(h => h.subject)))]
+    const statuses = ['Tüm Durumlar', ...Array.from(new Set(homeworks.map(h => h.status)))]
+
+    const filteredHomeworks = homeworks.filter(hw => {
+        const matchesSearch = hw.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            hw.description.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesStatus = selectedStatus === 'Tüm Durumlar' || hw.status === selectedStatus
+        const matchesSubject = selectedSubject === 'Tüm Dersler' || hw.subject === selectedSubject
+
+        return matchesSearch && matchesStatus && matchesSubject
+    })
 
     return (
         <div className="flex flex-col gap-6 p-6 font-sans">
@@ -67,17 +83,15 @@ export default function VeliOdevlerPage() {
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">DÖNEM</span>
-                    <button className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-                        2023-2024 Güz <ChevronDown className="h-4 w-4" />
-                    </button>
-                </div>
-                <div className="relative w-96">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Arama..."
-                        className="w-full rounded-full border border-gray-100 bg-gray-50/50 py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                    <select
+                        value={selectedPeriod}
+                        onChange={(e) => setSelectedPeriod(e.target.value)}
+                        className="flex items-center gap-1 text-sm font-semibold text-gray-700 bg-transparent outline-none cursor-pointer"
+                    >
+                        <option value="2023-2024 Güz">2023-2024 Güz</option>
+                        <option value="2023-2024 Bahar">2023-2024 Bahar</option>
+                        <option value="2022-2023 Yaz">2022-2023 Yaz</option>
+                    </select>
                 </div>
             </div>
 
@@ -120,17 +134,31 @@ export default function VeliOdevlerPage() {
                     <input
                         type="text"
                         placeholder="Ödev ara..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full rounded-xl border-none bg-gray-100/50 py-2 pl-10 pr-4 text-sm outline-none"
                     />
                 </div>
 
-                <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-50">
-                    Tüm Durumlar <ChevronDown className="h-4 w-4 text-gray-400" />
-                </button>
+                <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-50 outline-none appearance-none cursor-pointer"
+                >
+                    {statuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                    ))}
+                </select>
 
-                <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-50">
-                    Tüm Dersler <ChevronDown className="h-4 w-4 text-gray-400" />
-                </button>
+                <select
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-50 outline-none appearance-none cursor-pointer"
+                >
+                    {subjects.map(subject => (
+                        <option key={subject} value={subject}>{subject}</option>
+                    ))}
+                </select>
 
                 <button className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-50">
                     <Calendar className="h-4 w-4 text-gray-400" /> Tarih
@@ -142,67 +170,84 @@ export default function VeliOdevlerPage() {
                 <h2 className="text-xl font-bold text-gray-900">Bu Hafta</h2>
 
                 <div className="grid gap-4">
-                    {homeworks.map((hw) => (
-                        <div
-                            key={hw.id}
-                            className={cn(
-                                "group relative flex items-center justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm transition-all hover:shadow-md border border-gray-100",
-                                "before:absolute before:left-0 before:top-4 before:bottom-4 before:w-1.5 before:rounded-r-full",
-                                hw.color === 'orange' && "before:bg-orange-500",
-                                hw.color === 'purple' && "before:bg-purple-500",
-                                hw.color === 'red' && "before:bg-red-500"
-                            )}
-                        >
-                            <div className="flex items-center gap-5 flex-1">
-                                {/* Icon Box */}
-                                <div className={cn(
-                                    "flex h-14 w-14 items-center justify-center rounded-2xl shrink-0",
-                                    hw.color === 'orange' && "bg-orange-50 text-orange-600",
-                                    hw.color === 'purple' && "bg-purple-50 text-purple-600",
-                                    hw.color === 'red' && "bg-red-50 text-red-600"
-                                )}>
-                                    <hw.icon className="h-7 w-7" />
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
-                                        {hw.title}
-                                    </h3>
-                                    <p className="text-sm font-medium text-gray-500">
-                                        {hw.subject} • {hw.teacher}
-                                    </p>
-                                    <p className="mt-2 text-sm text-gray-600 line-clamp-1">
-                                        {hw.description}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Status & Navigation */}
-                            <div className="flex items-center gap-6">
-                                <div className="text-right">
+                    {filteredHomeworks.length > 0 ? (
+                        filteredHomeworks.map((hw) => (
+                            <div
+                                key={hw.id}
+                                className={cn(
+                                    "group relative flex items-center justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm transition-all hover:shadow-md border border-gray-100",
+                                    "before:absolute before:left-0 before:top-4 before:bottom-4 before:w-1.5 before:rounded-r-full",
+                                    hw.color === 'orange' && "before:bg-orange-500",
+                                    hw.color === 'purple' && "before:bg-purple-500",
+                                    hw.color === 'red' && "before:bg-red-500"
+                                )}
+                            >
+                                <div className="flex items-center gap-5 flex-1">
+                                    {/* Icon Box */}
                                     <div className={cn(
-                                        "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold",
-                                        hw.status === 'Yarın Son Gün' && "bg-orange-100 text-orange-600",
-                                        hw.status === 'Bekliyor' && "bg-blue-100 text-blue-600",
-                                        hw.status === 'Gecikmiş' && "bg-red-100 text-red-600"
+                                        "flex h-14 w-14 items-center justify-center rounded-2xl shrink-0",
+                                        hw.color === 'orange' && "bg-orange-50 text-orange-600",
+                                        hw.color === 'purple' && "bg-purple-50 text-purple-600",
+                                        hw.color === 'red' && "bg-red-50 text-red-600"
                                     )}>
-                                        {hw.status === 'Yarın Son Gün' && <span className="h-1.5 w-1.5 rounded-full bg-orange-600" />}
-                                        {hw.status === 'Bekliyor' && <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />}
-                                        {hw.status === 'Gecikmiş' && <span className="h-1.5 w-1.5 rounded-full bg-red-600" />}
-                                        {hw.status}
+                                        <hw.icon className="h-7 w-7" />
                                     </div>
-                                    <p className="mt-2 text-xs font-bold text-gray-400 px-1">
-                                        {hw.dueDate}
-                                    </p>
+
+                                    {/* Content */}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={cn(
+                                                "px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider",
+                                                hw.color === 'orange' && "bg-orange-100 text-orange-700",
+                                                hw.color === 'purple' && "bg-purple-100 text-purple-700",
+                                                hw.color === 'red' && "bg-red-100 text-red-700"
+                                            )}>
+                                                {hw.subject}
+                                            </span>
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">•</span>
+                                            <span className="text-sm font-bold text-gray-600">{hw.teacher}</span>
+                                        </div>
+                                        <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-primary transition-colors">
+                                            {hw.title}
+                                        </h3>
+                                        <p className="mt-2 text-sm text-gray-600 line-clamp-1">
+                                            {hw.description}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 transition-all hover:bg-gray-50 hover:text-primary">
-                                    <ChevronRight className="h-5 w-5" />
-                                </button>
+                                {/* Status & Navigation */}
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <div className={cn(
+                                            "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold",
+                                            hw.status === 'Yarın Son Gün' && "bg-orange-100 text-orange-600",
+                                            hw.status === 'Bekliyor' && "bg-blue-100 text-blue-600",
+                                            hw.status === 'Gecikmiş' && "bg-red-100 text-red-600"
+                                        )}>
+                                            {hw.status === 'Yarın Son Gün' && <span className="h-1.5 w-1.5 rounded-full bg-orange-600" />}
+                                            {hw.status === 'Bekliyor' && <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />}
+                                            {hw.status === 'Gecikmiş' && <span className="h-1.5 w-1.5 rounded-full bg-red-600" />}
+                                            {hw.status}
+                                        </div>
+                                        <p className="mt-2 text-xs font-bold text-gray-400 px-1">
+                                            {hw.dueDate}
+                                        </p>
+                                    </div>
+
+                                    <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 transition-all hover:bg-gray-50 hover:text-primary">
+                                        <ChevronRight className="h-5 w-5" />
+                                    </button>
+                                </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-200">
+                            <BookOpen className="h-12 w-12 text-gray-300 mb-4" />
+                            <p className="text-lg font-bold text-gray-500">Ödev bulunamadı</p>
+                            <p className="text-sm text-gray-400">Filtreleri değiştirmeyi deneyebilirsiniz.</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>

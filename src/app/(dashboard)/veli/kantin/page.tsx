@@ -17,6 +17,23 @@ import {
     Coffee
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
+import { DateRange } from 'react-day-picker'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 const children = [
     { id: 1, name: 'Ali Yılmaz', avatar: null },
@@ -33,6 +50,24 @@ const transactions = [
 
 export default function VeliKantinPage() {
     const [selectedChild, setSelectedChild] = useState(children[0])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedCategory, setSelectedCategory] = useState('Tüm Kategoriler')
+    const [date, setDate] = useState<DateRange | undefined>()
+
+    const categories = ['Tüm Kategoriler', 'Öğle Yemeği', 'Su & Atıştırmalık', 'Bakiye Yükleme', 'Kantin Harcaması']
+
+    const filteredTransactions = transactions.filter(tx => {
+        const matchesSearch = tx.description.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesCategory = selectedCategory === 'Tüm Kategoriler' ||
+            tx.description === selectedCategory ||
+            (selectedCategory === 'Kantin Harcaması' && tx.type === 'expense')
+
+        // Mock filtering for date range
+        const matchesDate = !date?.from || true
+
+        return matchesSearch && matchesCategory && matchesDate
+    })
 
     return (
         <div className="flex flex-col gap-6 p-6 font-sans bg-[#F8FAFC]">
@@ -145,24 +180,64 @@ export default function VeliKantinPage() {
 
             {/* Filters Bar */}
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 bg-white/50 p-3 rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-4 py-3 min-w-[180px] shadow-sm cursor-pointer hover:bg-gray-50 transition-all group">
-                    <Calendar className="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors" />
-                    <span className="text-sm font-bold text-gray-700 flex-1">Bu Hafta</span>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn(
+                                "justify-start text-left font-bold bg-white border-gray-200 py-6 px-4 rounded-xl shadow-sm text-sm min-w-[180px] h-auto hover:bg-gray-50",
+                                !date && "text-gray-700"
+                            )}
+                        >
+                            <Calendar className="mr-2 h-4 w-4 text-gray-400" />
+                            {date?.from ? (
+                                date.to ? (
+                                    <>
+                                        {format(date.from, "d LLL", { locale: tr })} - {format(date.to, "d LLL", { locale: tr })}
+                                    </>
+                                ) : (
+                                    format(date.from, "d LLL", { locale: tr })
+                                )
+                            ) : (
+                                <span>Tarih Seçin</span>
+                            )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                            initialFocus
+                            mode="range"
+                            defaultMonth={date?.from}
+                            selected={date}
+                            onSelect={setDate}
+                            numberOfMonths={2}
+                            locale={tr}
+                        />
+                    </PopoverContent>
+                </Popover>
 
-                <div className="flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-4 py-3 min-w-[180px] shadow-sm cursor-pointer hover:bg-gray-50 transition-all group">
-                    <Filter className="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors" />
-                    <span className="text-sm font-bold text-gray-700 flex-1">Tüm Kategoriler</span>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full md:w-[220px] h-[3.25rem] bg-white border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 px-4">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-gray-400" />
+                            <SelectValue placeholder="Kategori Seçin" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {categories.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
                         placeholder="Ürün ara..."
-                        className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-gray-200 bg-white py-3.5 pl-11 pr-4 text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
                     />
                 </div>
             </div>
@@ -177,36 +252,48 @@ export default function VeliKantinPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {transactions.map((tx) => (
-                            <tr key={tx.id} className="hover:bg-gray-50/30 transition-colors group">
-                                <td className="px-10 py-7">
-                                    <div className="flex items-start gap-5">
-                                        <div className={cn(
-                                            "h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-110",
-                                            tx.type === 'expense' ? "bg-gray-50 text-gray-400" : "bg-green-50 text-green-500"
+                        {filteredTransactions.length > 0 ? (
+                            filteredTransactions.map((tx) => (
+                                <tr key={tx.id} className="hover:bg-gray-50/30 transition-colors group">
+                                    <td className="px-10 py-7">
+                                        <div className="flex items-start gap-5">
+                                            <div className={cn(
+                                                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-110",
+                                                tx.type === 'expense' ? "bg-gray-50 text-gray-400" : "bg-green-50 text-green-500"
+                                            )}>
+                                                {tx.type === 'expense' ? <Coffee className="h-6 w-6" /> : <ArrowDownLeft className="h-6 w-6" />}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-base font-black text-gray-900 group-hover:text-primary transition-colors">
+                                                    {tx.date}
+                                                </h4>
+                                                <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">
+                                                    {tx.time} • {tx.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-10 py-7 text-right">
+                                        <span className={cn(
+                                            "text-xl font-black tracking-tighter",
+                                            tx.type === 'expense' ? "text-gray-900" : "text-green-500 shadow-sm"
                                         )}>
-                                            {tx.type === 'expense' ? <Coffee className="h-6 w-6" /> : <ArrowDownLeft className="h-6 w-6" />}
-                                        </div>
-                                        <div>
-                                            <h4 className="text-base font-black text-gray-900 group-hover:text-primary transition-colors">
-                                                {tx.date}
-                                            </h4>
-                                            <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">
-                                                {tx.time} • {tx.description}
-                                            </p>
-                                        </div>
+                                            {tx.type === 'expense' ? '-' : '+'}₺{tx.amount.toFixed(2)}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={2} className="py-20 text-center">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <Coffee className="h-12 w-12 text-gray-200 mb-4" />
+                                        <p className="text-xl font-black text-gray-400">İşlem Bulunamadı</p>
+                                        <p className="text-sm font-bold text-gray-400 mt-1">Filtreleri değiştirerek tekrar deneyebilirsiniz.</p>
                                     </div>
                                 </td>
-                                <td className="px-10 py-7 text-right">
-                                    <span className={cn(
-                                        "text-xl font-black tracking-tighter",
-                                        tx.type === 'expense' ? "text-gray-900" : "text-green-500 shadow-sm"
-                                    )}>
-                                        {tx.type === 'expense' ? '-' : '+'}₺{tx.amount.toFixed(2)}
-                                    </span>
-                                </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
