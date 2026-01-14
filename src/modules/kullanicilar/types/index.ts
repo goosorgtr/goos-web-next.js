@@ -5,7 +5,7 @@ export interface Kullanici {
     name: string;
     avatar: string;
     lastSeen: string;
-    role: UserRole;
+    role: UserRole | string; // Allow string for roleId from database
     roleColor: string;
     email: string;
     userId: string;
@@ -15,9 +15,12 @@ export interface Kullanici {
 }
 
 export interface CreateKullaniciDto {
-    name: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string; // For backward compatibility
     email: string;
-    role: UserRole;
+    role?: UserRole; // For backward compatibility
+    roleId?: string; // Database field
     department?: string;
     password?: string;
 }

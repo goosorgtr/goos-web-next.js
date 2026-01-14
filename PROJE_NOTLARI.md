@@ -335,6 +335,43 @@ npm install @radix-ui/react-select @radix-ui/react-popover
 
 ---
 
+### 14.01.2026 - Backend → Supabase Migration
+
+#### 1. Axios'tan Supabase'e Geçiş
+
+**Migrate Edilen Servisler:**
+*   **`src/modules/kullanicilar/services/kullanicilar.service.ts`**
+    *   Axios API calls → Supabase queries
+    *   Mock data kaldırıldı
+    *   Error handling eklendi
+    *   Data transformation (database → UI format)
+    
+*   **`src/modules/donem/services/semester.service.ts`**
+    *   Axios API calls → Supabase queries
+    *   MOCK_SEMESTERS kaldırıldı
+    *   toggleActive() iki query kullanıyor (get + update)
+
+**Type Güncellemeleri:**
+*   **`src/modules/kullanicilar/types/index.ts`**
+    *   `CreateKullaniciDto` ve `UpdateKullaniciDto` güncellendi
+    *   Database fields eklendi: `firstName`, `lastName`, `roleId`
+    *   Backward compatibility için eski fields korundu: `name`, `role`
+
+**Özellikler:**
+*   ✅ Backend server'a gerek kalmadı
+*   ✅ Doğrudan Supabase database queries
+*   ✅ Otomatik snake_case ↔ camelCase conversion
+*   ✅ Standardize edilmiş error handling
+*   ✅ Full TypeScript type safety
+*   ✅ Pagination, filtering, sorting desteği
+
+**Test Durumu:**
+*   ⏳ Kullanıcılar sayfası test edildi: `http://localhost:3001/admin/kullanicilar-roller`
+*   ⚠️ Users tablosu boş olduğu için veri görünmüyor
+*   ⏳ Supabase'e örnek veri eklenmeli
+
+---
+
 ## 🔮 Gelecek Adımlar
 
 ### ✅ Tamamlanan: Supabase Entegrasyonu (14.01.2026)
