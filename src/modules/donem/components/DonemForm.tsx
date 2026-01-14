@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,10 +13,11 @@ interface DonemFormProps {
     onSubmit: (data: CreateDonemDto) => void
     onCancel: () => void
     isSubmitting?: boolean
+    allowActiveToggle?: boolean
 }
 
-export function DonemForm({ initialData, onSubmit, onCancel, isSubmitting }: DonemFormProps) {
-    const { register, handleSubmit, formState: { errors } } = useForm({
+export function DonemForm({ initialData, onSubmit, onCancel, isSubmitting, allowActiveToggle = false }: DonemFormProps) {
+    const { register, handleSubmit, control, formState: { errors } } = useForm({
         resolver: zodResolver(donemSchema),
         defaultValues: {
             name: initialData?.name || '',
@@ -27,7 +28,21 @@ export function DonemForm({ initialData, onSubmit, onCancel, isSubmitting }: Don
     })
 
     const onFormSubmit = (data: any) => {
-        onSubmit(data as CreateDonemDto)
+        // Form'dan gelen veriyi hazırla
+        const submitData: CreateDonemDto = {
+            name: data.name,
+            startDate: data.startDate,
+            endDate: data.endDate
+        }
+        
+        // Eğer allowActiveToggle true ise, isActive değerini ekle (true veya false)
+        // Aksi halde undefined bırak (otomatik tarih kontrolü yapılacak)
+        if (allowActiveToggle) {
+            // Checkbox değerini boolean olarak gönder
+            submitData.isActive = Boolean(data.isActive)
+        }
+        
+        onSubmit(submitData)
     }
 
     return (
@@ -64,17 +79,26 @@ export function DonemForm({ initialData, onSubmit, onCancel, isSubmitting }: Don
                 </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-                <input
-                    id="isActive"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    {...register('isActive')}
-                />
-                <Label htmlFor="isActive" className="font-normal cursor-pointer">
-                    Aktif dönem olarak ayarla
-                </Label>
-            </div>
+            {allowActiveToggle && (
+                <div className="flex items-center space-x-2">
+                    <Controller
+                        name="isActive"
+                        control={control}
+                        render={({ field }) => (
+                            <input
+                                id="isActive"
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                checked={field.value}
+                                onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                        )}
+                    />
+                    <Label htmlFor="isActive" className="font-normal cursor-pointer">
+                        Aktif dönem olarak ayarla
+                    </Label>
+                </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button type="button" variant="outline" onClick={onCancel}>

@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Diğer roller için standart header
       default:
         return (
-          <header className="flex h-16 items-center justify-between border-b bg-white px-6">
+          <header className="flex h-[92px] items-center justify-between border-b bg-white px-6">
             <div className="flex items-center gap-4">
               <button
                 onClick={toggleMobileSidebar}
@@ -165,7 +165,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Page Content - Scrollable */}
-        <main className="mt-16 flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="mt-[92px] flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   )
