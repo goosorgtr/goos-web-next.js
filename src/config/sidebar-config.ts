@@ -23,6 +23,7 @@ import {
     CheckSquare,
     FileEdit,
     Upload,
+    User,
     type LucideIcon,
 } from 'lucide-react'
 import type { Role } from '@/types/roles'
@@ -152,6 +153,12 @@ const adminSidebarConfig: SidebarConfig = {
             icon: Bell,
         },
         {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/admin/profil',
+            icon: User,
+        },
+        {
             id: 'ayarlar',
             label: 'Ayarlar',
             href: '/admin/ayarlar',
@@ -166,10 +173,10 @@ const veliSidebarConfig: SidebarConfig = {
     subtitle: 'Veli Portalı',
     items: [
         {
-            id: 'kontrol-paneli',
-            label: 'Kontrol Paneli',
+            id: 'anasayfa',
+            label: 'Ana Sayfa',
             href: '/veli',
-            icon: LayoutDashboard,
+            icon: Home,
         },
         {
             id: 'donem',
@@ -243,6 +250,12 @@ const veliSidebarConfig: SidebarConfig = {
             label: 'Yemek Listesi',
             href: '/veli/yemek-listesi',
             icon: UtensilsCrossed,
+        },
+        {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/veli/profil',
+            icon: User,
         },
         {
             id: 'ayarlar',
@@ -325,6 +338,12 @@ const ogrenciSidebarConfig: SidebarConfig = {
             label: 'Sınav Bilgileri',
             href: '/ogrenci/sinav-bilgileri',
             icon: ClipboardList,
+        },
+        {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/ogrenci/profil',
+            icon: User,
         },
         {
             id: 'ayarlar',
@@ -424,6 +443,12 @@ const ogretmenSidebarConfig: SidebarConfig = {
             icon: Bell,
         },
         {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/ogretmen/profil',
+            icon: User,
+        },
+        {
             id: 'ayarlar',
             label: 'Ayarlar',
             href: '/ogretmen/ayarlar',
@@ -456,6 +481,12 @@ const kantinciSidebarConfig: SidebarConfig = {
             icon: ListChecks,
         },
         {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/kantinci/profil',
+            icon: User,
+        },
+        {
             id: 'ayarlar',
             label: 'Ayarlar',
             href: '/kantinci/ayarlar',
@@ -486,6 +517,12 @@ const serviciSidebarConfig: SidebarConfig = {
             label: 'Güzergah',
             href: '/servici/guzergah',
             icon: MapPin,
+        },
+        {
+            id: 'profil',
+            label: 'Profilim',
+            href: '/servici/profil',
+            icon: User,
         },
         {
             id: 'ayarlar',

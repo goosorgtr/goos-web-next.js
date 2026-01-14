@@ -1,10 +1,10 @@
 import { ProfilePage } from '@/components/shared/ProfilePage'
 
 export const metadata = {
-  title: 'Profilim - Servici',
-  description: 'Servici profil sayfası'
+  title: 'Profilim - Veli',
+  description: 'Veli profil sayfası'
 }
 
-export default function ServiciProfilPage() {
+export default function VeliProfilPage() {
   return <ProfilePage />
 }
