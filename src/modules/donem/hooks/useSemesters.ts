@@ -66,8 +66,10 @@ export function useSemesters() {
         // Success states
         isCreateSuccess: createMutation.isSuccess,
         isUpdateSuccess: updateMutation.isSuccess,
+        isDeleteSuccess: deleteMutation.isSuccess,
         // Reset functions
         resetCreate: createMutation.reset,
-        resetUpdate: updateMutation.reset
+        resetUpdate: updateMutation.reset,
+        resetDelete: deleteMutation.reset
     };
 }

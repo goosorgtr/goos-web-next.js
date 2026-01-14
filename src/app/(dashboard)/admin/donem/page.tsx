@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Trash2, Edit } from 'lucide-react'
+import { Plus, Search, Trash2, Edit, Power } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useSemesters } from '@/modules/donem/hooks/useSemesters'
 import { AddDonemDialog } from '@/modules/donem/components/AddDonemDialog'
 import { EditDonemDialog } from '@/modules/donem/components/EditDonemDialog'
@@ -30,8 +31,10 @@ export default function DonemPage() {
     isDeleting,
     isCreateSuccess,
     isUpdateSuccess,
+    isDeleteSuccess,
     resetCreate,
-    resetUpdate
+    resetUpdate,
+    resetDelete
   } = useSemesters()
 
   // Dialog açıldığında mutation'ları reset et
@@ -136,16 +139,22 @@ export default function DonemPage() {
     }
   }
 
+  const handleToggleActive = (donem: Donem) => {
+    // Toggle aktif durumu
+    const newActiveState = !donem.isActive
+    updateSemester({ 
+      id: donem.id, 
+      dto: { isActive: newActiveState } 
+    })
+  }
+
   // Silme işlemi başarılı olduğunda dialog'u kapat
   useEffect(() => {
-    if (!isDeleting && deletingDonem) {
-      // İşlem tamamlandı, toast gösterildikten sonra dialog'u kapat
-      const timer = setTimeout(() => {
-        setDeletingDonem(null)
-      }, 300)
-      return () => clearTimeout(timer)
+    if (isDeleteSuccess && !isDeleting && deletingDonem) {
+      setDeletingDonem(null)
+      resetDelete()
     }
-  }, [isDeleting, deletingDonem])
+  }, [isDeleteSuccess, isDeleting, deletingDonem, resetDelete])
 
   // Aktif durum artık otomatik olarak tarih aralığına göre belirleniyor
   // toggleActive fonksiyonu kaldırıldı
@@ -288,16 +297,23 @@ export default function DonemPage() {
                       <p className="text-sm text-muted-foreground">{formatDate(semester.endDate)}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                          semester.isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                        title={semester.isActive ? 'Bu dönem şu anki tarih aralığında olduğu için aktif' : 'Bu dönem şu anki tarih aralığında değil'}
-                      >
-                        {semester.isActive ? 'Aktif' : 'Pasif'}
-                      </span>
+                      <div className="flex items-center justify-center gap-3">
+                        <Checkbox
+                          checked={semester.isActive}
+                          onCheckedChange={() => handleToggleActive(semester)}
+                          disabled={isUpdating}
+                          className="cursor-pointer"
+                        />
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                            semester.isActive
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {semester.isActive ? 'Aktif' : 'Pasif'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">

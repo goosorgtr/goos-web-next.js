@@ -28,15 +28,20 @@ export function DonemForm({ initialData, onSubmit, onCancel, isSubmitting, allow
     })
 
     const onFormSubmit = (data: any) => {
-        // Eğer allowActiveToggle true ise, isActive değerini her zaman gönder (true veya false)
-        // Aksi halde undefined bırak (otomatik tarih kontrolü yapılacak)
+        // Form'dan gelen veriyi hazırla
         const submitData: CreateDonemDto = {
             name: data.name,
             startDate: data.startDate,
-            endDate: data.endDate,
-            // allowActiveToggle true ise isActive'i gönder, false ise undefined
-            ...(allowActiveToggle && { isActive: Boolean(data.isActive) })
+            endDate: data.endDate
         }
+        
+        // Eğer allowActiveToggle true ise, isActive değerini ekle (true veya false)
+        // Aksi halde undefined bırak (otomatik tarih kontrolü yapılacak)
+        if (allowActiveToggle) {
+            // Checkbox değerini boolean olarak gönder
+            submitData.isActive = Boolean(data.isActive)
+        }
+        
         onSubmit(submitData)
     }
 

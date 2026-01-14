@@ -15,42 +15,15 @@ export const semesterService = {
         }
 
         // Transform database semesters to Donem format
+        // NOT: Artık otomatik tarih kontrolü yapmıyoruz, sadece veritabanındaki değeri döndürüyoruz
+        // Kullanıcı manuel olarak aktif/pasif yapabiliyor
         const semesters = response.data.map((semester: Tables<'semesters'>) => ({
             id: semester.id,
             name: semester.name || '',
             startDate: semester.startDate || '',
             endDate: semester.endDate || '',
-            isActive: semester.isActive || false
+            isActive: semester.isActive ?? false
         }));
-
-        // Update active status based on current date
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Find which semester should be active
-        const shouldBeActive = semesters.find(semester => {
-            const startDate = new Date(semester.startDate);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(semester.endDate);
-            endDate.setHours(23, 59, 59, 999);
-
-            return today >= startDate && today <= endDate;
-        });
-
-        // Update isActive property in memory (async update in background)
-        if (shouldBeActive) {
-            this.updateActiveStatus().catch(console.error);
-            // Update in-memory data
-            semesters.forEach(semester => {
-                semester.isActive = semester.id === shouldBeActive.id;
-            });
-        } else {
-            // No active semester, update all to inactive
-            this.updateActiveStatus().catch(console.error);
-            semesters.forEach(semester => {
-                semester.isActive = false;
-            });
-        }
 
         return semesters;
     },
@@ -76,16 +49,19 @@ export const semesterService = {
         // Get current semester to check if dates are changing
         const current = await this.getById(id);
         const datesChanged = dto.startDate !== undefined || dto.endDate !== undefined;
-        const isActiveChanged = dto.isActive !== undefined && dto.isActive !== current.isActive;
+        const isActiveManuallySet = dto.isActive !== undefined;
 
-        // If isActive is being set to true, deactivate all other semesters first
-        if (isActiveChanged && dto.isActive === true) {
-            const allSemesters = await this.getSemesters();
-            for (const semester of allSemesters) {
-                if (semester.id !== id && semester.isActive) {
-                    await supabaseApi.update('semesters', semester.id, {
-                        isActive: false
-                    });
+        // If isActive is being manually set to true, deactivate all other semesters first
+        if (isActiveManuallySet && dto.isActive === true) {
+            // Tüm diğer aktif dönemleri pasif yap
+            const response = await supabaseApi.getAll('semesters');
+            if (response.success && response.data) {
+                for (const semester of response.data) {
+                    if (semester.id !== id && semester.isActive) {
+                        await supabaseApi.update('semesters', semester.id, {
+                            isActive: false
+                        });
+                    }
                 }
             }
         }
@@ -95,7 +71,12 @@ export const semesterService = {
         if (dto.name !== undefined) updateData.name = dto.name;
         if (dto.startDate !== undefined) updateData.startDate = dto.startDate;
         if (dto.endDate !== undefined) updateData.endDate = dto.endDate;
-        if (dto.isActive !== undefined) updateData.isActive = dto.isActive;
+        
+        // isActive değeri manuel olarak set edilmişse (undefined değilse) gönder
+        // false olsa bile gönder (kullanıcı pasif yapmak istiyor)
+        if (isActiveManuallySet) {
+            updateData.isActive = Boolean(dto.isActive)
+        }
 
         const response = await supabaseApi.update('semesters', id, updateData);
 
@@ -103,14 +84,19 @@ export const semesterService = {
             throw new Error(response.message);
         }
 
-        // If dates changed (but not isActive), recalculate active status for all semesters
-        if (datesChanged && !isActiveChanged) {
+        // If dates changed but isActive was not manually set, recalculate active status
+        // (Bitiş tarihi geçen dönemler otomatik pasif olacak)
+        if (datesChanged && !isActiveManuallySet) {
             await this.updateActiveStatus();
             // Get updated semester
             const updated = await this.getById(id);
             return updated;
         }
 
+        // Eğer isActive manuel olarak false yapıldıysa, sadece bu dönem pasif olur
+        // (Diğer dönemlerin durumu değişmez, kullanıcı tüm dönemleri pasif yapabilir)
+
+        // Return updated semester
         const semester = response.data;
         return {
             id: semester.id,
@@ -130,40 +116,13 @@ export const semesterService = {
     },
 
     async getActiveSemester(): Promise<Donem | null> {
-        // Get all semesters and find the one that contains today's date
+        // Get all semesters and find the one that is marked as active
+        // NOT: Artık otomatik tarih kontrolü yapmıyoruz, sadece isActive: true olan dönemi döndürüyoruz
         const allSemesters = await this.getSemesters();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        
+        const activeSemester = allSemesters.find(semester => semester.isActive);
 
-        const activeSemester = allSemesters.find(semester => {
-            const startDate = new Date(semester.startDate);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(semester.endDate);
-            endDate.setHours(23, 59, 59, 999);
-
-            return today >= startDate && today <= endDate;
-        });
-
-        if (!activeSemester) {
-            return null;
-        }
-
-        // Update isActive status in database if needed
-        const currentActive = allSemesters.find(s => s.isActive);
-        if (currentActive?.id !== activeSemester.id) {
-            // Update all semesters: set the one in date range as active, others as inactive
-            for (const semester of allSemesters) {
-                const shouldBeActive = semester.id === activeSemester.id;
-                if (semester.isActive !== shouldBeActive) {
-                    await supabaseApi.update('semesters', semester.id, {
-                        isActive: shouldBeActive
-                    });
-                }
-            }
-            activeSemester.isActive = true;
-        }
-
-        return activeSemester;
+        return activeSemester || null;
     },
 
     async create(dto: CreateDonemDto): Promise<Donem> {
@@ -223,28 +182,45 @@ export const semesterService = {
     /**
      * Updates active status based on current date
      * Only the semester that contains today's date can be active
+     * Bitiş tarihi geçen dönemler otomatik olarak pasif yapılır
+     * 
+     * NOT: Bu fonksiyon doğrudan veritabanından veri çeker, getSemesters() kullanmaz
+     * çünkü getSemesters() bu fonksiyonu çağırabilir ve sonsuz döngü oluşabilir
      */
     async updateActiveStatus(): Promise<void> {
-        const allSemesters = await this.getSemesters();
+        // Doğrudan veritabanından veri çek (getSemesters() kullanma)
+        const response = await supabaseApi.getAll('semesters', {
+            sortBy: 'startDate',
+            sortOrder: 'desc'
+        });
+
+        if (!response.success) {
+            throw new Error(response.message);
+        }
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         // Find the semester that should be active (contains today's date)
-        const shouldBeActive = allSemesters.find(semester => {
-            const startDate = new Date(semester.startDate);
+        const shouldBeActive = response.data.find((semester: Tables<'semesters'>) => {
+            const startDate = new Date(semester.startDate || '');
             startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(semester.endDate);
+            const endDate = new Date(semester.endDate || '');
             endDate.setHours(23, 59, 59, 999);
 
             return today >= startDate && today <= endDate;
         });
 
-        // Update all semesters
-        for (const semester of allSemesters) {
-            const isActive = semester.id === shouldBeActive?.id;
-            if (semester.isActive !== isActive) {
-                await supabaseApi.update('semesters', semester.id, {
-                    isActive
+        // Update all semesters: bitiş tarihi geçenler pasif, sadece bugünün tarihine uygun olan aktif
+        for (const semester of response.data) {
+            const semesterId = semester.id;
+            const shouldBeActiveForThis = semesterId === shouldBeActive?.id;
+            const currentIsActive = semester.isActive || false;
+
+            // Eğer durum değiştiyse güncelle
+            if (currentIsActive !== shouldBeActiveForThis) {
+                await supabaseApi.update('semesters', semesterId, {
+                    isActive: shouldBeActiveForThis
                 });
             }
         }

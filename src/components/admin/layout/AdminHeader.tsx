@@ -10,7 +10,7 @@ export default function AdminHeader() {
 
   return (
     <header className="border-b bg-white">
-      <div className="flex h-16 items-center gap-4 px-6">
+      <div className="flex h-[92px] items-center gap-4 px-6">
         {/* Logo ve Yönetim */}
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
