@@ -118,13 +118,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className={cn(
-      "flex min-h-screen bg-gray-50",
+      "min-h-screen bg-gray-50",
       user?.role === 'OGRENCI' && 'theme-ogrenci',
       user?.role === 'OGRETMEN' && 'theme-ogretmen',
       user?.role === 'VELI' && 'theme-veli'
     )}>
-      {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r bg-white lg:block">
+      {/* Desktop Sidebar - Fixed */}
+      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 border-r bg-white lg:block">
         {renderSidebar()}
       </aside>
 
@@ -157,13 +157,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-        {renderHeader()}
+      {/* Main Content - With left margin for sidebar */}
+      <div className="flex min-h-screen flex-col lg:ml-64">
+        {/* Header - Fixed */}
+        <div className="fixed right-0 top-0 z-20 w-full lg:w-[calc(100%-16rem)]">
+          {renderHeader()}
+        </div>
 
-        {/* Page Content */}
-        <main className="flex-1 p-6">{children}</main>
+        {/* Page Content - Scrollable */}
+        <main className="mt-16 flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   )
