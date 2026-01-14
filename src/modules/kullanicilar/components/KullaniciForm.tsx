@@ -5,20 +5,27 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useRoles } from '../hooks/useRoles'
 import type { CreateKullaniciDto } from '../types'
 
 const kullaniciSchema = z.object({
-    name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
+    firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
+    lastName: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
     email: z.string().email('Geçerli bir e-posta adresi giriniz'),
-    role: z.enum(['Admin', 'Öğretmen', 'Öğrenci', 'Veli', 'Servici', 'Kantinci', 'Veli Uzman'] as const),
-    department: z.string().optional(),
-    password: z.string().min(6, 'Şifre en az 6 karakter olmalıdır').optional(),
+    roleId: z.string().min(1, 'Rol seçimi zorunludur'),
+    phone: z.string().optional(),
+    gender: z.enum(['male', 'female', 'other'] as const).optional(),
+    dateOfBirth: z.string().optional(),
+    address: z.string().optional(),
+    password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır'),
+    confirmPassword: z.string(),
     // Role-specific fields
-    sinif: z.string().optional(), // Öğrenci için
-    sube: z.string().optional(), // Öğrenci için
-    brans: z.string().optional(), // Öğretmen için
-    ogrenciId: z.string().optional(), // Veli için
-    plaka: z.string().optional(), // Servici için
+    classId: z.string().optional(),
+    studentNo: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'Şifreler eşleşmiyor',
+    path: ['confirmPassword'],
 })
 
 type FormData = z.infer<typeof kullaniciSchema>
@@ -31,162 +38,163 @@ interface KullaniciFormProps {
 }
 
 export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }: KullaniciFormProps) {
+    const { roles, isLoading: rolesLoading } = useRoles()
     const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(kullaniciSchema),
         defaultValues: {
-            name: initialData?.name || '',
-            email: initialData?.email || '',
-            role: (initialData?.role as any) || 'Öğrenci',
-            department: initialData?.department || '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            roleId: '',
+            phone: '',
+            gender: undefined,
+            dateOfBirth: '',
+            address: '',
             password: '',
-            sinif: '',
-            sube: '',
-            brans: '',
-            ogrenciId: '',
-            plaka: ''
+            confirmPassword: '',
+            classId: '',
+            studentNo: ''
         }
     })
 
-    const selectedRole = watch('role')
+    const selectedRoleId = watch('roleId')
 
     const onFormSubmit = (data: FormData) => {
-        onSubmit(data as CreateKullaniciDto)
+        const { confirmPassword, ...submitData } = data
+        onSubmit(submitData as CreateKullaniciDto)
+    }
+
+    if (rolesLoading) {
+        return <div className="p-8 text-center">Yükleniyor...</div>
     }
 
     return (
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Ad Soyad</label>
-                <Input placeholder="Ad Soyad" {...register('name')} />
-                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">E-posta</label>
-                <Input placeholder="ornek@goos.edu" {...register('email')} />
-                {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Rol</label>
-                <select
-                    {...register('role')}
-                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                    <option value="Admin">Admin</option>
-                    <option value="Öğretmen">Öğretmen</option>
-                    <option value="Öğrenci">Öğrenci</option>
-                    <option value="Veli">Veli</option>
-                    <option value="Servici">Servici</option>
-                    <option value="Kantinci">Kantinci</option>
-                </select>
-                {errors.role && <p className="text-xs text-red-500">{errors.role.message}</p>}
-            </div>
-
-            {/* Öğrenci için Sınıf ve Şube */}
-            {selectedRole === 'Öğrenci' && (
-                <>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Sınıf</label>
-                            <select
-                                {...register('sinif')}
-                                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="">Seçiniz</option>
-                                <option value="9">9. Sınıf</option>
-                                <option value="10">10. Sınıf</option>
-                                <option value="11">11. Sınıf</option>
-                                <option value="12">12. Sınıf</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Şube</label>
-                            <select
-                                {...register('sube')}
-                                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="">Seçiniz</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                            </select>
-                        </div>
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
+            {/* Kişisel Bilgiler */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">Kişisel Bilgiler</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="firstName">Ad *</Label>
+                        <Input id="firstName" placeholder="Ad" {...register('firstName')} />
+                        {errors.firstName && <p className="text-xs text-red-500">{errors.firstName.message}</p>}
                     </div>
-                </>
-            )}
 
-            {/* Öğretmen için Branş */}
-            {selectedRole === 'Öğretmen' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="lastName">Soyad *</Label>
+                        <Input id="lastName" placeholder="Soyad" {...register('lastName')} />
+                        {errors.lastName && <p className="text-xs text-red-500">{errors.lastName.message}</p>}
+                    </div>
+                </div>
+
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Branş</label>
+                    <Label htmlFor="email">E-posta *</Label>
+                    <Input id="email" type="email" placeholder="ornek@goos.edu" {...register('email')} />
+                    {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="phone">Telefon</Label>
+                        <Input id="phone" type="tel" placeholder="05XX XXX XX XX" {...register('phone')} />
+                        {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="dateOfBirth">Doğum Tarihi</Label>
+                        <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
+                        {errors.dateOfBirth && <p className="text-xs text-red-500">{errors.dateOfBirth.message}</p>}
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="gender">Cinsiyet</Label>
                     <select
-                        {...register('brans')}
-                        className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        id="gender"
+                        {...register('gender')}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     >
                         <option value="">Seçiniz</option>
-                        <option value="Matematik">Matematik</option>
-                        <option value="Türkçe">Türkçe</option>
-                        <option value="Fizik">Fizik</option>
-                        <option value="Kimya">Kimya</option>
-                        <option value="Biyoloji">Biyoloji</option>
-                        <option value="Tarih">Tarih</option>
-                        <option value="Coğrafya">Coğrafya</option>
-                        <option value="İngilizce">İngilizce</option>
+                        <option value="male">Erkek</option>
+                        <option value="female">Kadın</option>
+                        <option value="other">Diğer</option>
                     </select>
+                    {errors.gender && <p className="text-xs text-red-500">{errors.gender.message}</p>}
                 </div>
-            )}
 
-            {/* Veli için Öğrenci Seçimi */}
-            {selectedRole === 'Veli' && (
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Velisi Olduğu Öğrenci</label>
-                    <Input
-                        placeholder="Öğrenci adı veya numarası"
-                        {...register('ogrenciId')}
+                    <Label htmlFor="address">Adres</Label>
+                    <Input id="address" placeholder="Tam adres" {...register('address')} />
+                    {errors.address && <p className="text-xs text-red-500">{errors.address.message}</p>}
+                </div>
+            </div>
+
+            {/* Rol ve Yetki */}
+            <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-semibold text-gray-900">Rol ve Yetki</h3>
+                
+                <div className="space-y-2">
+                    <Label htmlFor="roleId">Rol *</Label>
+                    <select
+                        id="roleId"
+                        {...register('roleId')}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                        <option value="">Rol Seçiniz</option>
+                        {roles.map((role) => (
+                            <option key={role.id} value={role.id}>
+                                {role.name}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.roleId && <p className="text-xs text-red-500">{errors.roleId.message}</p>}
+                </div>
+            </div>
+
+            {/* Güvenlik */}
+            <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-semibold text-gray-900">Güvenlik</h3>
+                
+                <div className="space-y-2">
+                    <Label htmlFor="password">Şifre *</Label>
+                    <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="En az 8 karakter" 
+                        {...register('password')} 
                     />
-                    <p className="text-xs text-gray-500">Öğrenci bilgilerini girerek eşleştirin</p>
-                </div>
-            )}
-
-            {/* Servici için Plaka */}
-            {selectedRole === 'Servici' && (
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Araç Plakası</label>
-                    <Input
-                        placeholder="Örn: 34 ABC 123"
-                        {...register('plaka')}
-                    />
-                    <p className="text-xs text-gray-500">Servis aracının plaka bilgisini giriniz</p>
-                </div>
-            )}
-
-            {/* Kantinci için Bölüm (opsiyonel) */}
-            {selectedRole === 'Kantinci' && (
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Kantin Bölümü</label>
-                    <Input
-                        placeholder="Örn: Ana Kantin, Spor Salonu Kantini"
-                        {...register('department')}
-                    />
-                </div>
-            )}
-
-            {!initialData && (
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Şifre</label>
-                    <Input type="password" placeholder="******" {...register('password')} />
                     {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
                 </div>
-            )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={onCancel}>
+                <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Şifre Tekrar *</Label>
+                    <Input 
+                        id="confirmPassword" 
+                        type="password" 
+                        placeholder="Şifreyi tekrar girin" 
+                        {...register('confirmPassword')} 
+                    />
+                    {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
+                </div>
+
+                <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
+                    <p className="font-medium mb-1">Şifre gereksinimleri:</p>
+                    <ul className="space-y-0.5">
+                        <li>• En az 8 karakter</li>
+                        <li>• Büyük ve küçük harf içermeli</li>
+                        <li>• En az bir rakam içermeli</li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-6 border-t sticky bottom-0 bg-white">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                     İptal
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Kaydediliyor...' : initialData ? 'Güncelle' : 'Ekle'}
+                    {isSubmitting ? 'Kaydediliyor...' : 'Kullanıcı Oluştur'}
                 </Button>
             </div>
         </form>

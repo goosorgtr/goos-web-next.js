@@ -22,6 +22,9 @@ export function useKullanicilar(options?: UseKullanicilarOptions) {
         mutationFn: (dto: CreateKullaniciDto) => kullanicilarService.create(dto),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['kullanicilar'] });
+        },
+        onError: (error: Error) => {
+            throw error;
         }
     });
 
@@ -44,9 +47,9 @@ export function useKullanicilar(options?: UseKullanicilarOptions) {
         data: data ?? [],
         isLoading,
         error,
-        createKullanici: createMutation.mutate,
-        updateKullanici: updateMutation.mutate,
-        deleteKullanici: deleteMutation.mutate,
+        createKullanici: createMutation.mutateAsync,
+        updateKullanici: updateMutation.mutateAsync,
+        deleteKullanici: deleteMutation.mutateAsync,
         isCreating: createMutation.isPending,
         isUpdating: updateMutation.isPending,
         isDeleting: deleteMutation.isPending

@@ -9,9 +9,10 @@ import { EditUserDialog } from '@/components/admin/kullanicilar/EditUserDialog'
 import { AddUserDialog } from '@/components/admin/kullanicilar/AddUserDialog'
 import { useKullanicilar } from '@/modules/kullanicilar/hooks/useKullanicilar'
 import type { Kullanici } from '@/modules/kullanicilar/types'
+import { toast } from 'sonner'
 
 export function AdminKullanicilarDashboard() {
-    const { data: users, isLoading, createKullanici, deleteKullanici } = useKullanicilar()
+    const { data: users, isLoading, createKullanici, deleteKullanici, isCreating, isDeleting } = useKullanicilar()
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedRole, setSelectedRole] = useState('all')
     const [selectedStatus, setSelectedStatus] = useState('all')
@@ -148,13 +149,21 @@ export function AdminKullanicilarDashboard() {
                                                         <Edit className="h-4 w-4" /> Düzenle
                                                     </button>
                                                     <button
-                                                        onClick={() => {
-                                                            if (confirm('Emin misiniz?')) deleteKullanici(user.id)
+                                                        onClick={async () => {
+                                                            if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
+                                                                try {
+                                                                    await deleteKullanici(user.id)
+                                                                    toast.success('Kullanıcı başarıyla silindi')
+                                                                } catch (error) {
+                                                                    toast.error('Kullanıcı silinemedi')
+                                                                }
+                                                            }
                                                             setOpenMenuId(null)
                                                         }}
                                                         className="flex w-full items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                                                        disabled={isDeleting}
                                                     >
-                                                        <Trash2 className="h-4 w-4" /> Sil
+                                                        <Trash2 className="h-4 w-4" /> {isDeleting ? 'Siliniyor...' : 'Sil'}
                                                     </button>
                                                 </div>
                                             )}
@@ -171,10 +180,16 @@ export function AdminKullanicilarDashboard() {
             <AddUserDialog
                 open={addDialogOpen}
                 onOpenChange={setAddDialogOpen}
-                onSubmit={(data) => {
-                    createKullanici(data)
-                    setAddDialogOpen(false)
+                onSubmit={async (data) => {
+                    try {
+                        await createKullanici(data)
+                        toast.success('Kullanıcı başarıyla oluşturuldu!')
+                        setAddDialogOpen(false)
+                    } catch (error) {
+                        toast.error(error instanceof Error ? error.message : 'Kullanıcı oluşturulamadı')
+                    }
                 }}
+                isLoading={isCreating}
             />
 
             {selectedUser && (

@@ -23,6 +23,13 @@ export interface CreateKullaniciDto {
     roleId?: string; // Database field
     department?: string;
     password?: string;
+    phone?: string;
+    gender?: 'male' | 'female' | 'other';
+    dateOfBirth?: string;
+    address?: string;
+    // Role-specific fields
+    classId?: string; // Öğrenci için
+    studentNo?: string; // Öğrenci için
 }
 
 export interface UpdateKullaniciDto extends Partial<CreateKullaniciDto> {

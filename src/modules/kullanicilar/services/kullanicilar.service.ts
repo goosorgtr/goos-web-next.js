@@ -56,16 +56,44 @@ export const kullanicilarService = {
     },
 
     async create(dto: CreateKullaniciDto): Promise<Kullanici> {
+        // 1. Create auth user in Supabase Auth
+        if (!dto.password) {
+            throw new Error('Şifre gereklidir');
+        }
+
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: dto.email,
+            password: dto.password,
+            options: {
+                data: {
+                    first_name: dto.firstName,
+                    last_name: dto.lastName
+                }
+            }
+        });
+
+        if (authError || !authData.user) {
+            throw new Error(authError?.message || 'Kullanıcı oluşturulamadı');
+        }
+
+        // 2. Create user profile in users table
         const response = await supabaseApi.create('users', {
+            id: authData.user.id, // Use Supabase Auth user ID
             firstName: dto.firstName,
             lastName: dto.lastName,
             email: dto.email,
             roleId: dto.roleId,
+            phone: dto.phone,
+            gender: dto.gender,
+            dateOfBirth: dto.dateOfBirth,
+            address: dto.address,
             isActive: true
         });
 
         if (!response.success) {
-            throw new Error(response.message);
+            // Rollback: Delete auth user if profile creation fails
+            await supabase.auth.admin.deleteUser(authData.user.id);
+            throw new Error('message' in response ? response.message : 'Profil oluşturulamadı');
         }
 
         const user = response.data;
