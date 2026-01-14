@@ -10,10 +10,10 @@ export function LogoutButton() {
     const { logout } = useAuth()
     const closeMobileSidebar = useSidebarStore((state) => state.closeMobileSidebar)
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         closeMobileSidebar()
-        logout()
-        router.push('/giris')
+        await logout()
+        // Router.push not needed - logout handles redirect
     }
 
     return (

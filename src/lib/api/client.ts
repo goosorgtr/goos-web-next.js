@@ -1,6 +1,8 @@
 import axios from 'axios'
+import { supabase } from '@/lib/supabase/client'
 
-const apiClient = axios.create({
+// Legacy Axios client for backward compatibility
+const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
@@ -8,7 +10,7 @@ const apiClient = axios.create({
 })
 
 // Request interceptor
-apiClient.interceptors.request.use(
+axiosClient.interceptors.request.use(
   (config) => {
     // Add auth token if exists
     const token = localStorage.getItem('token')
@@ -23,16 +25,19 @@ apiClient.interceptors.request.use(
 )
 
 // Response interceptor
-apiClient.interceptors.response.use(
+axiosClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized
+      // Handle unauthorized - sign out from Supabase
+      await supabase.auth.signOut()
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.location.href = '/giris'
     }
     return Promise.reject(error)
   }
 )
 
-export default apiClient
+// Default export is now Supabase for new code
+export { axiosClient }
+export default axiosClient

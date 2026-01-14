@@ -59,6 +59,21 @@ export enum StaffType {
     OTHER = 'other'
 }
 
+export enum OrderStatus {
+    PENDING = 'pending',
+    PREPARING = 'preparing',
+    READY = 'ready',
+    COMPLETED = 'completed',
+    CANCELLED = 'cancelled'
+}
+
+export enum PaymentStatus {
+    PENDING = 'pending',
+    PAID = 'paid',
+    OVERDUE = 'overdue',
+    CANCELLED = 'cancelled'
+}
+
 // ============================================
 // TABLE TYPES
 // ============================================
@@ -438,6 +453,90 @@ export interface MealPlan {
     uploadedAt: string | null
 }
 
+export interface CanteenProduct {
+    id: string
+    name: string | null
+    description: string | null
+    price: number | null
+    categoryId: string | null
+    imageUrl: string | null
+    stock: number | null
+    isAvailable: boolean | null
+    isActive: boolean | null
+    createdAt: string | null
+    updatedAt: string | null
+}
+
+export interface CanteenCategory {
+    id: string
+    name: string | null
+    isActive: boolean | null
+    createdAt: string | null
+}
+
+export interface CanteenOrder {
+    id: string
+    studentId: string | null
+    totalAmount: number | null
+    status: string | null
+    semesterId: string | null
+    createdAt: string | null
+    completedAt: string | null
+}
+
+export interface CanteenOrderItem {
+    id: string
+    orderId: string | null
+    productId: string | null
+    quantity: number | null
+    priceAtOrder: number | null
+}
+
+export interface Payment {
+    id: string
+    studentId: string | null
+    amount: number | null
+    categoryId: string | null
+    description: string | null
+    dueDate: string | null
+    paidDate: string | null
+    status: string | null
+    semesterId: string | null
+    createdAt: string | null
+}
+
+export interface PaymentCategory {
+    id: string
+    name: string | null
+    description: string | null
+    isActive: boolean | null
+    createdAt: string | null
+}
+
+export interface Debt {
+    id: string
+    studentId: string | null
+    amount: number | null
+    description: string | null
+    dueDate: string | null
+    status: string | null
+    semesterId: string | null
+    createdAt: string | null
+    updatedAt: string | null
+}
+
+export interface PaymentPlan {
+    id: string
+    studentId: string | null
+    totalAmount: number | null
+    installments: number | null
+    paidInstallments: number | null
+    status: string | null
+    semesterId: string | null
+    createdAt: string | null
+    updatedAt: string | null
+}
+
 export interface ActivityLog {
     id: string
     userId: string | null
@@ -671,6 +770,46 @@ export interface Database {
                 Insert: Omit<MealPlan, 'id' | 'uploadedAt'>
                 Update: Partial<Omit<MealPlan, 'id' | 'uploadedAt'>>
             }
+            canteen_products: {
+                Row: CanteenProduct
+                Insert: Omit<CanteenProduct, 'id' | 'createdAt' | 'updatedAt'>
+                Update: Partial<Omit<CanteenProduct, 'id' | 'createdAt'>>
+            }
+            canteen_categories: {
+                Row: CanteenCategory
+                Insert: Omit<CanteenCategory, 'id' | 'createdAt'>
+                Update: Partial<Omit<CanteenCategory, 'id' | 'createdAt'>>
+            }
+            canteen_orders: {
+                Row: CanteenOrder
+                Insert: Omit<CanteenOrder, 'id' | 'createdAt'>
+                Update: Partial<Omit<CanteenOrder, 'id' | 'createdAt'>>
+            }
+            canteen_order_items: {
+                Row: CanteenOrderItem
+                Insert: Omit<CanteenOrderItem, 'id'>
+                Update: Partial<Omit<CanteenOrderItem, 'id'>>
+            }
+            payments: {
+                Row: Payment
+                Insert: Omit<Payment, 'id' | 'createdAt'>
+                Update: Partial<Omit<Payment, 'id' | 'createdAt'>>
+            }
+            payment_categories: {
+                Row: PaymentCategory
+                Insert: Omit<PaymentCategory, 'id' | 'createdAt'>
+                Update: Partial<Omit<PaymentCategory, 'id' | 'createdAt'>>
+            }
+            debts: {
+                Row: Debt
+                Insert: Omit<Debt, 'id' | 'createdAt' | 'updatedAt'>
+                Update: Partial<Omit<Debt, 'id' | 'createdAt'>>
+            }
+            payment_plans: {
+                Row: PaymentPlan
+                Insert: Omit<PaymentPlan, 'id' | 'createdAt' | 'updatedAt'>
+                Update: Partial<Omit<PaymentPlan, 'id' | 'createdAt'>>
+            }
             activity_logs: {
                 Row: ActivityLog
                 Insert: Omit<ActivityLog, 'id' | 'createdAt'>
@@ -687,6 +826,8 @@ export interface Database {
             service_attendance_status: ServiceAttendanceStatus
             gender: Gender
             staff_type: StaffType
+            order_status: OrderStatus
+            payment_status: PaymentStatus
         }
     }
 }

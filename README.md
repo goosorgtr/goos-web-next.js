@@ -1,27 +1,31 @@
-# School Management System - Web Frontend
+# 🏫 GOOS - Okul Yönetim Sistemi
 
-A comprehensive school management system built with Next.js 14, TypeScript, and Tailwind CSS.
+Next.js 14, TypeScript, Tailwind CSS ve Supabase ile geliştirilmiş kapsamlı okul yönetim sistemi.
 
-## Features
+## ✨ Özellikler
 
-- 🏫 **Multi-role Support**: Admin, Teacher, Student, and Parent dashboards
-- 📚 **Academic Management**: Classes, courses, exams, grades, and homework
-- 💰 **Finance Management**: Payment plans, debt tracking, and installments
-- 🍔 **Canteen System**: Product management, orders, and balance tracking
-- 📢 **Communication**: Announcements, events, and notifications
-- 🚌 **Transportation**: Vehicle and student assignment management
-- 📊 **Reporting**: Academic and financial reports with export capabilities
+- 🏫 **Çoklu Rol Desteği**: Admin, Öğretmen, Öğrenci, Veli, Kantinci, Servici
+- 📚 **Akademik Yönetim**: Sınıflar, dersler, sınavlar, notlar ve ödevler
+- 💰 **Finans Yönetimi**: Ödeme planları, borç takibi ve taksitler
+- 🍔 **Kantin Sistemi**: Ürün yönetimi, siparişler ve bakiye takibi
+- 📢 **İletişim**: Duyurular, etkinlikler ve bildirimler
+- 🚌 **Servis Yönetimi**: Araç ve öğrenci atama yönetimi
+- 📊 **Raporlama**: Akademik ve finansal raporlar
+- 🔔 **Real-time Bildirimler**: Supabase real-time ile canlı güncellemeler
+- 🔐 **Güvenli Auth**: Supabase Auth ile güvenli kimlik doğrulama
 
-## Tech Stack
+## 🛠️ Teknoloji Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
+- **UI Components**: shadcn/ui + Radix UI
 - **State Management**: Zustand
 - **Data Fetching**: TanStack Query (React Query)
 - **Forms**: React Hook Form + Zod
-- **HTTP Client**: Axios
+- **Notifications**: Sonner
 
 ## Project Structure
 
@@ -47,39 +51,59 @@ src/
 └── constants/            # App constants
 ```
 
-## Getting Started
+## 🚀 Hızlı Başlangıç
 
-### Prerequisites
+### Gereksinimler
 
-- Node.js 18+ and npm/yarn/pnpm
-- Backend API running on `http://localhost:5000`
+- Node.js 18+ ve npm/yarn/pnpm
+- Supabase hesabı ([supabase.com](https://supabase.com))
 
-### Installation
+### Kurulum
 
-1. Clone the repository
+1. **Repoyu klonla**
 ```bash
 git clone <repository-url>
 cd goos-web-next.js
 ```
 
-2. Install dependencies
+2. **Dependencies yükle**
 ```bash
 npm install
 ```
 
-3. Create environment file
+3. **Environment dosyası oluştur**
 ```bash
-cp .env.example .env.local
+# .env.local dosyası oluştur
+echo "NEXT_PUBLIC_SUPABASE_URL=your-supabase-url" > .env.local
+echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key" >> .env.local
+echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+echo "NODE_ENV=development" >> .env.local
 ```
 
-4. Update environment variables in `.env.local`
+**Supabase credentials'ı al:**
+- [app.supabase.com](https://app.supabase.com) → Projeniz → Settings → API
+- `URL` ve `anon public` key'i kopyalayın
 
-5. Run the development server
+4. **Development server başlat**
 ```bash
 npm run dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. **Tarayıcıda aç**
+[http://localhost:3000](http://localhost:3000)
+
+### 🔐 Test Kullanıcıları (Development Mode)
+
+**TC:** `12345678912`  
+**Şifreler:**
+- `admin` → Admin paneli
+- `veli` → Veli paneli
+- `ogrenci` → Öğrenci paneli
+- `ogretmen` → Öğretmen paneli
+- `kantinci` → Kantinci paneli
+- `servici` → Servici paneli
+
+**Production için:** Login sayfasında "E-posta" sekmesine geçip Supabase Auth kullanın.
 
 ## Available Scripts
 
@@ -119,10 +143,42 @@ npm run dev
 - Manage canteen balance
 - Communicate with teachers
 
-## Development Status
+## 📚 Dokümantasyon
 
-This project is currently in initial setup phase. The basic folder structure and configuration files have been created.
+- **[SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)** - Detaylı kurulum talimatları
+- **[SUPABASE_MIGRATION_GUIDE.md](./SUPABASE_MIGRATION_GUIDE.md)** - Supabase entegrasyon rehberi
+- **[ARCHITECTURE_FINAL.md](./ARCHITECTURE_FINAL.md)** - Mimari dökümantasyon
 
-## License
+## 🎯 Geliştirme Durumu
 
-This project is licensed under the MIT License.
+### ✅ Tamamlanan (v1.0)
+- ✅ Supabase entegrasyonu
+- ✅ Auth sistemi (Login/Logout/Password Reset)
+- ✅ 24 Service dosyası
+- ✅ Real-time notifications
+- ✅ Store management (Zustand)
+- ✅ Type-safe database operations
+- ✅ 50+ database table types
+- ✅ UI components (shadcn/ui)
+
+### 🚧 Devam Eden
+- Component migration (mock data → real data)
+- Row Level Security policies
+- Storage buckets setup
+
+### 📋 Planlanan
+- Advanced reporting
+- Mobile app
+- Push notifications
+
+## 🤝 Katkıda Bulunma
+
+Katkılarınızı bekliyoruz! Lütfen önce bir issue açın.
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+---
+
+**© 2025 GOOS - Okul Yönetim Sistemi**

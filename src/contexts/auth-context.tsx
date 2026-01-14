@@ -1,8 +1,11 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import { supabaseApi } from '@/lib/supabase/api'
 import type { Role } from '@/types/roles'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export interface User {
   id: string
@@ -14,13 +17,17 @@ export interface User {
   class?: string
   // Öğretmen için branş bilgisi
   subject?: string
+  // Supabase user data
+  supabaseUser?: SupabaseUser
+  roleId?: string
 }
 
 interface AuthContextType {
   user: User | null
   setUser: (user: User | null) => void
-  logout: () => void
+  logout: () => Promise<void>
   isAuthenticated: boolean
+  loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -69,7 +76,11 @@ export const MOCK_USERS: Record<Role, User> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  // URL'den kullanıcı rolünü belirleme fonksiyonu
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // URL'den kullanıcı rolünü belirleme fonksiyonu (backward compatibility)
   const getUserFromPath = (path: string | null) => {
     if (path?.startsWith('/admin')) return MOCK_USERS.ADMIN
     if (path?.startsWith('/veli')) return MOCK_USERS.VELI
@@ -80,18 +91,119 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null
   }
 
-  const [user, setUser] = useState<User | null>(() => getUserFromPath(pathname))
+  // Fetch user profile from database
+  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
+    try {
+      const response = await supabaseApi.getById('users', supabaseUser.id)
+      
+      if (response.success && response.data) {
+        const userData = response.data
+        
+        // Get role name
+        const roleResponse = await supabaseApi.getById('roles', userData.roleId || '')
+        const roleName = roleResponse.success ? roleResponse.data.name : 'OGRENCI'
+        
+        // Map role name to Role type
+        const roleMap: Record<string, Role> = {
+          'admin': 'ADMIN',
+          'veli': 'VELI',
+          'ogrenci': 'OGRENCI',
+          'ogretmen': 'OGRETMEN',
+          'kantinci': 'KANTINCI',
+          'servici': 'SERVICI'
+        }
 
-  // URL değiştiğinde kullanıcıyı güncelle
+        const mappedUser: User = {
+          id: userData.id,
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          email: userData.email || supabaseUser.email || '',
+          role: roleMap[roleName.toLowerCase()] || 'OGRENCI',
+          avatar: userData.profileImageUrl || undefined,
+          supabaseUser,
+          roleId: userData.roleId || undefined
+        }
+
+        setUser(mappedUser)
+      } else {
+        // Fallback to mock user for development
+        const mockUser = getUserFromPath(pathname)
+        if (mockUser) {
+          setUser(mockUser)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      // Fallback to mock user
+      const mockUser = getUserFromPath(pathname)
+      if (mockUser) {
+        setUser(mockUser)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Initialize auth state
   useEffect(() => {
-    const newUser = getUserFromPath(pathname)
-    if (newUser?.id !== user?.id) {
-      setUser(newUser)
+    const initAuth = async () => {
+      try {
+        // Check for existing session
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          await fetchUserProfile(session.user)
+        } else {
+          // Fallback to mock user for development
+          const mockUser = getUserFromPath(pathname)
+          if (mockUser) {
+            setUser(mockUser)
+          }
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        setLoading(false)
+      }
+    }
+
+    initAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          await fetchUserProfile(session.user)
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null)
+          router.push('/giris')
+        }
+      }
+    )
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // URL değiştiğinde kullanıcıyı güncelle (backward compatibility)
+  useEffect(() => {
+    if (!user) {
+      const newUser = getUserFromPath(pathname)
+      if (newUser) {
+        setUser(newUser)
+      }
     }
   }, [pathname])
 
-  const logout = () => {
-    setUser(null)
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut()
+      localStorage.removeItem('token')
+      setUser(null)
+      router.push('/giris')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const value = {
@@ -99,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser,
     logout,
     isAuthenticated: !!user,
+    loading
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

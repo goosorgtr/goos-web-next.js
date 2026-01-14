@@ -1,14 +1,55 @@
 'use client'
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import authService from "@/lib/services/auth.service"
+import { toast } from "sonner"
 
 export default function ResetPasswordPage() {
+  const router = useRouter()
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validation
+    if (password.length < 8) {
+      toast.error('Şifre en az 8 karakter olmalıdır')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      toast.error('Şifreler eşleşmiyor')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const result = await authService.updatePassword(password)
+      
+      if (result.success) {
+        toast.success('Şifreniz başarıyla güncellendi!')
+        setTimeout(() => {
+          router.push('/giris')
+        }, 1500)
+      } else {
+        toast.error(result.message || 'Şifre güncellenemedi')
+      }
+    } catch (error) {
+      toast.error('Bir hata oluştu. Lütfen tekrar deneyin.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -26,7 +67,7 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Form */}
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         {/* Yeni Şifre */}
         <div className="space-y-2">
           <Label htmlFor="new-password">Yeni Şifre</Label>
@@ -36,6 +77,9 @@ export default function ResetPasswordPage() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••••"
               className="pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <button
               type="button"
@@ -65,6 +109,9 @@ export default function ResetPasswordPage() {
               type={showConfirmPassword ? "text" : "password"}
               placeholder="••••••••••"
               className="pr-10"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
             />
             <button
               type="button"
@@ -98,8 +145,8 @@ export default function ResetPasswordPage() {
         </div>
 
         {/* Kaydet Butonu */}
-        <Button type="submit" className="w-full" size="lg">
-          Şifreyi Kaydet
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
         </Button>
       </form>
 

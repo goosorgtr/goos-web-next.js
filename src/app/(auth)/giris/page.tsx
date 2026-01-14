@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth, MOCK_USERS } from "@/contexts/auth-context"
+import authService from "@/lib/services/auth.service"
+import { toast } from "sonner"
 
 type LoginStep = 'login' | 'create-password'
 
@@ -14,57 +16,84 @@ export default function LoginPage() {
   const router = useRouter()
   const { setUser } = useAuth()
   const [step, setStep] = useState<LoginStep>('login')
+  const [email, setEmail] = useState('')
   const [tcNumber, setTcNumber] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [useEmail, setUseEmail] = useState(false) // Toggle between TC and Email
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
-    // Sabit TC Kimlik Numarası
-    const MOCK_TC = '12345678912'
+    try {
+      // Try Supabase Auth first if using email
+      if (useEmail && email) {
+        const result = await authService.signIn({
+          email,
+          password
+        })
 
-    // TC kontrolü
-    if (tcNumber !== MOCK_TC) {
-      setError('TC Kimlik Numarası hatalı!')
-      return
-    }
+        if (result.success) {
+          toast.success('Giriş başarılı!')
+          // Auth context will handle user fetching and redirect
+          return
+        } else {
+          setError(result.message || 'Giriş başarısız!')
+          setLoading(false)
+          return
+        }
+      }
 
-    // Şifreye göre rol belirleme ve yönlendirme
-    const passwordLower = password.toLowerCase().trim()
+      // Fallback to mock system for development
+      const MOCK_TC = '12345678912'
 
-    switch (passwordLower) {
-      case 'admin':
-        setUser(MOCK_USERS.ADMIN)
-        router.push('/admin')
-        break
-      case 'veli':
-        setUser(MOCK_USERS.VELI)
-        router.push('/veli')
-        break
-      case 'ogrenci':
-      case 'öğrenci':
-        setUser(MOCK_USERS.OGRENCI)
-        router.push('/ogrenci')
-        break
-      case 'ogretmen':
-      case 'öğretmen':
-        setUser(MOCK_USERS.OGRETMEN)
-        router.push('/ogretmen')
-        break
-      case 'kantinci':
-        setUser(MOCK_USERS.KANTINCI)
-        router.push('/kantinci')
-        break
-      case 'servici':
-        setUser(MOCK_USERS.SERVICI)
-        router.push('/servici')
-        break
-      default:
-        setError('Geçersiz şifre! Lütfen rol adını girin (admin, veli, ogrenci, ogretmen, kantinci, servici)')
+      if (tcNumber !== MOCK_TC) {
+        setError('TC Kimlik Numarası hatalı!')
+        setLoading(false)
+        return
+      }
+
+      const passwordLower = password.toLowerCase().trim()
+
+      switch (passwordLower) {
+        case 'admin':
+          setUser(MOCK_USERS.ADMIN)
+          router.push('/admin')
+          break
+        case 'veli':
+          setUser(MOCK_USERS.VELI)
+          router.push('/veli')
+          break
+        case 'ogrenci':
+        case 'öğrenci':
+          setUser(MOCK_USERS.OGRENCI)
+          router.push('/ogrenci')
+          break
+        case 'ogretmen':
+        case 'öğretmen':
+          setUser(MOCK_USERS.OGRETMEN)
+          router.push('/ogretmen')
+          break
+        case 'kantinci':
+          setUser(MOCK_USERS.KANTINCI)
+          router.push('/kantinci')
+          break
+        case 'servici':
+          setUser(MOCK_USERS.SERVICI)
+          router.push('/servici')
+          break
+        default:
+          setError('Geçersiz şifre! Lütfen rol adını girin (admin, veli, ogrenci, ogretmen, kantinci, servici)')
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Bir hata oluştu')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -206,19 +235,59 @@ export default function LoginPage() {
 
       {/* Form */}
       <form className="space-y-4" onSubmit={handleLogin}>
-        {/* TC Kimlik Numarası */}
-        <div className="space-y-2">
-          <Label htmlFor="tc-number">TC Kimlik Numarası</Label>
-          <Input
-            id="tc-number"
-            type="text"
-            placeholder="11 haneli TC kimlik numaranız giriniz"
-            value={tcNumber}
-            onChange={(e) => setTcNumber(e.target.value)}
-            maxLength={11}
-            required
-          />
+        {/* Login Method Toggle */}
+        <div className="flex gap-2 rounded-lg bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => setUseEmail(false)}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              !useEmail 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            TC Kimlik
+          </button>
+          <button
+            type="button"
+            onClick={() => setUseEmail(true)}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              useEmail 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            E-posta
+          </button>
         </div>
+
+        {/* Email or TC Input */}
+        {useEmail ? (
+          <div className="space-y-2">
+            <Label htmlFor="email">E-posta Adresi</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="ornek@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor="tc-number">TC Kimlik Numarası</Label>
+            <Input
+              id="tc-number"
+              type="text"
+              placeholder="11 haneli TC kimlik numaranız giriniz"
+              value={tcNumber}
+              onChange={(e) => setTcNumber(e.target.value)}
+              maxLength={11}
+              required
+            />
+          </div>
+        )}
 
         {/* Şifre */}
         <div className="space-y-2">
@@ -274,8 +343,8 @@ export default function LoginPage() {
         </div>
 
         {/* Giriş Butonu */}
-        <Button type="submit" className="w-full" size="lg">
-          Giriş Yap
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
         </Button>
       </form>
 

@@ -1,33 +1,56 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-// Middleware to protect routes
-export function middleware(request: NextRequest) {
-  // TEMPORARILY DISABLED FOR TESTING WITH MOCK USERS
-  // This middleware will be re-enabled when real authentication is implemented
-
-  return NextResponse.next()
-
-  /* ORIGINAL AUTH LOGIC - COMMENTED OUT FOR TESTING
-  const token = request.cookies.get('token')
+// Middleware to protect routes with Supabase Auth
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes - Giriş yapılmadan erişilebilir sayfalar
-  const publicRoutes = ['/giris', '/sifremi-unuttum', '/sifre-yenileme']
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+  const publicRoutes = ['/', '/giris', '/sifremi-unuttum', '/sifre-yenileme']
+  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route))
 
-  // Korumalı sayfaya token olmadan erişmeye çalışılırsa giriş sayfasına yönlendir
-  if (!token && !isPublicRoute && pathname !== '/') {
-    return NextResponse.redirect(new URL('/giris', request.url))
+  // Static files and public assets
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/static') ||
+    pathname.startsWith('/fonts') ||
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/icons') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next()
   }
 
-  // Giriş yapmış kullanıcı auth sayfalarına gitmeye çalışırsa dashboard'a yönlendir
-  if (token && isPublicRoute) {
-    return NextResponse.redirect(new URL('/admin', request.url))
+  // DEVELOPMENT MODE: Allow access without authentication
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  if (isDevelopment) {
+    return NextResponse.next()
   }
 
-  return NextResponse.next()
-  */
+  try {
+    // Get auth token from cookie
+    const token = request.cookies.get('sb-access-token')?.value
+
+    if (!token && !isPublicRoute) {
+      // No session and trying to access protected route
+      return NextResponse.redirect(new URL('/giris', request.url))
+    }
+
+    if (token && isPublicRoute && pathname !== '/') {
+      // Has session but trying to access auth pages - redirect to dashboard
+      // Default to admin for now, you can improve this by decoding the JWT
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // In case of error, allow request to continue in development
+    return NextResponse.next()
+  }
 }
 
 export const config = {

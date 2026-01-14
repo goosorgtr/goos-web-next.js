@@ -1,11 +1,74 @@
 'use client'
 
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import authService from "@/lib/services/auth.service"
+import { toast } from "sonner"
 
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const result = await authService.resetPassword(email)
+      
+      if (result.success) {
+        setSent(true)
+        toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi!')
+      } else {
+        toast.error(result.message || 'Bir hata oluştu')
+      }
+    } catch (error) {
+      toast.error('Bir hata oluştu. Lütfen tekrar deneyin.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="space-y-6">
+        {/* Logo ve Başlık */}
+        <div className="space-y-2 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-500">
+            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">E-posta Gönderildi!</h1>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{email}</span> adresine şifre sıfırlama bağlantısı gönderdik
+          </p>
+        </div>
+
+        {/* Bilgi */}
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
+          <p className="text-blue-800">
+            E-postanızdaki bağlantıya tıklayarak şifrenizi sıfırlayabilirsiniz. Bağlantı 1 saat geçerlidir.
+          </p>
+        </div>
+
+        {/* Alt Linkler */}
+        <div className="space-y-4 text-center text-sm">
+          <Link
+            href="/giris"
+            className="block text-muted-foreground hover:text-primary"
+          >
+            Giriş sayfasına dön
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Logo ve Başlık */}
@@ -22,7 +85,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Form */}
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email">E-posta Adresi</Label>
@@ -30,6 +93,9 @@ export default function ForgotPasswordPage() {
             id="email"
             type="email"
             placeholder="ornek@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <p className="text-xs text-muted-foreground">
             Kayıtlı e-posta adresinize şifre sıfırlama bağlantısı göndereceğiz
@@ -37,8 +103,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Gönder Butonu */}
-        <Button type="submit" className="w-full" size="lg">
-          Sıfırlama Bağlantısı Gönder
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'}
         </Button>
       </form>
 
