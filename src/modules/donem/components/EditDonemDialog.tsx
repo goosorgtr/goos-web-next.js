@@ -10,10 +10,14 @@ interface EditDonemDialogProps {
     donem: Donem | null
     onSubmit: (id: string, data: UpdateDonemDto) => void
     isLoading?: boolean
+    hasActiveSemester?: boolean
 }
 
-export function EditDonemDialog({ open, onOpenChange, donem, onSubmit, isLoading }: EditDonemDialogProps) {
+export function EditDonemDialog({ open, onOpenChange, donem, onSubmit, isLoading, hasActiveSemester = false }: EditDonemDialogProps) {
     if (!donem) return null
+
+    // Her zaman aktiflik toggle'ını göster (kullanıcı manuel olarak değiştirebilsin)
+    const allowActiveToggle = true
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -28,6 +32,7 @@ export function EditDonemDialog({ open, onOpenChange, donem, onSubmit, isLoading
                     }}
                     onCancel={() => onOpenChange(false)}
                     isSubmitting={isLoading}
+                    allowActiveToggle={allowActiveToggle}
                 />
             </DialogContent>
         </Dialog>

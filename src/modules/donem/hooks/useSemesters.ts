@@ -1,41 +1,51 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { semesterService } from '../services/semester.service';
 import type { Donem, CreateDonemDto, UpdateDonemDto } from '../types';
+import { toast } from 'sonner';
+import { useCreateSemester } from './useCreateSemester';
+import { useUpdateSemester } from './useUpdateSemester';
 
+/**
+ * Tüm dönem işlemlerini yöneten ana hook
+ * İçeride useCreateSemester ve useUpdateSemester hook'larını kullanır
+ * 
+ * @example
+ * ```tsx
+ * const { 
+ *   data: semesters, 
+ *   createSemester, 
+ *   updateSemester, 
+ *   deleteSemester,
+ *   isCreating,
+ *   isUpdating 
+ * } = useSemesters()
+ * ```
+ */
 export function useSemesters() {
     const queryClient = useQueryClient();
 
+    // Query: Tüm dönemleri getir
     const { data, isLoading, error } = useQuery({
         queryKey: ['semesters'],
-        queryFn: () => semesterService.getAll()
+        queryFn: () => semesterService.getSemesters()
     });
 
-    const createMutation = useMutation({
-        mutationFn: (dto: CreateDonemDto) => semesterService.create(dto),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['semesters'] });
-        }
-    });
+    // Create mutation: useCreateSemester hook'unu kullan
+    const createMutation = useCreateSemester();
 
-    const updateMutation = useMutation({
-        mutationFn: ({ id, dto }: { id: string; dto: UpdateDonemDto }) =>
-            semesterService.update(id, dto),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['semesters'] });
-        }
-    });
+    // Update mutation: useUpdateSemester hook'unu kullan
+    const updateMutation = useUpdateSemester();
 
+    // Delete mutation: Burada kalıyor (henüz ayrı hook yok)
     const deleteMutation = useMutation({
         mutationFn: (id: string) => semesterService.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['semesters'] });
-        }
-    });
-
-    const toggleActiveMutation = useMutation({
-        mutationFn: (id: string) => semesterService.toggleActive(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['semesters'] });
+            queryClient.invalidateQueries({ queryKey: ['semesters', 'active'] });
+            toast.success('Dönem başarıyla silindi');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Dönem silinirken bir hata oluştu');
         }
     });
 
@@ -43,13 +53,21 @@ export function useSemesters() {
         data: data ?? [],
         isLoading,
         error,
+        // Create: useCreateSemester'dan gelen mutation
         createSemester: createMutation.mutate,
+        // Update: useUpdateSemester'dan gelen mutation
         updateSemester: updateMutation.mutate,
+        // Delete: Yerel mutation
         deleteSemester: deleteMutation.mutate,
-        toggleActive: toggleActiveMutation.mutate,
+        // Loading states
         isCreating: createMutation.isPending,
         isUpdating: updateMutation.isPending,
         isDeleting: deleteMutation.isPending,
-        isTogglingActive: toggleActiveMutation.isPending
+        // Success states
+        isCreateSuccess: createMutation.isSuccess,
+        isUpdateSuccess: updateMutation.isSuccess,
+        // Reset functions
+        resetCreate: createMutation.reset,
+        resetUpdate: updateMutation.reset
     };
 }

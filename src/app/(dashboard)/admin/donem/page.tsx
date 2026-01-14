@@ -1,19 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useSemesters } from '@/modules/donem/hooks/useSemesters'
 import { AddDonemDialog } from '@/modules/donem/components/AddDonemDialog'
 import { EditDonemDialog } from '@/modules/donem/components/EditDonemDialog'
+import { DeleteDonemDialog } from '@/modules/donem/components/DeleteDonemDialog'
 import type { Donem } from '@/modules/donem/types'
 
 export default function DonemPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingDonem, setEditingDonem] = useState<Donem | null>(null)
+  const [deletingDonem, setDeletingDonem] = useState<Donem | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [startDateFilter, setStartDateFilter] = useState<string>('')
+  const [endDateFilter, setEndDateFilter] = useState<string>('')
 
   const {
     data: semesters,
@@ -21,11 +25,42 @@ export default function DonemPage() {
     createSemester,
     updateSemester,
     deleteSemester,
-    toggleActive,
     isCreating,
     isUpdating,
-    isDeleting
+    isDeleting,
+    isCreateSuccess,
+    isUpdateSuccess,
+    resetCreate,
+    resetUpdate
   } = useSemesters()
+
+  // Dialog açıldığında mutation'ları reset et
+  useEffect(() => {
+    if (showAddDialog) {
+      resetCreate()
+    }
+  }, [showAddDialog, resetCreate])
+
+  useEffect(() => {
+    if (editingDonem) {
+      resetUpdate()
+    }
+  }, [editingDonem, resetUpdate])
+
+  // Başarılı işlem sonrası dialog'ları kapat
+  useEffect(() => {
+    if (isCreateSuccess && !isCreating) {
+      setShowAddDialog(false)
+      resetCreate()
+    }
+  }, [isCreateSuccess, isCreating, resetCreate])
+
+  useEffect(() => {
+    if (isUpdateSuccess && !isUpdating) {
+      setEditingDonem(null)
+      resetUpdate()
+    }
+  }, [isUpdateSuccess, isUpdating, resetUpdate])
 
   // Format date for display (YYYY-MM-DD to DD.MM.YYYY)
   const formatDate = (dateString: string) => {
@@ -52,18 +87,68 @@ export default function DonemPage() {
       (statusFilter === 'active' && semester.isActive) ||
       (statusFilter === 'inactive' && !semester.isActive)
 
-    return matchesSearch && matchesStatus
+    // Tarih aralığı filtresi
+    const matchesDateRange =
+      (startDateFilter === '' && endDateFilter === '') ||
+      (() => {
+        // Eğer başlangıç bitişten geç ise filtreleme yapma
+        if (startDateFilter && endDateFilter && startDateFilter > endDateFilter) {
+          return false
+        }
+
+        const semesterStart = new Date(semester.startDate)
+        const semesterEnd = new Date(semester.endDate)
+        semesterStart.setHours(0, 0, 0, 0)
+        semesterEnd.setHours(23, 59, 59, 999)
+
+        const filterStart = startDateFilter ? new Date(startDateFilter) : null
+        const filterEnd = endDateFilter ? new Date(endDateFilter) : null
+
+        if (filterStart && filterEnd) {
+          // Her iki tarih de seçilmişse: dönem bu aralıkla kesişmeli
+          // Dönem başlangıcı filtre bitişinden önce olmalı VE dönem bitişi filtre başlangıcından sonra olmalı
+          filterStart.setHours(0, 0, 0, 0)
+          filterEnd.setHours(23, 59, 59, 999)
+          return semesterStart <= filterEnd && semesterEnd >= filterStart
+        } else if (filterStart) {
+          // Sadece başlangıç tarihi seçilmişse: dönem bu tarihten sonra başlamalı veya içinde olmalı
+          filterStart.setHours(0, 0, 0, 0)
+          return semesterEnd >= filterStart
+        } else if (filterEnd) {
+          // Sadece bitiş tarihi seçilmişse: dönem bu tarihten önce bitmeli veya içinde olmalı
+          filterEnd.setHours(23, 59, 59, 999)
+          return semesterStart <= filterEnd
+        }
+
+        return true
+      })()
+
+    return matchesSearch && matchesStatus && matchesDateRange
   })
 
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`"${name}" dönemini silmek istediğinizden emin misiniz?`)) {
-      deleteSemester(id)
+  const handleDelete = (donem: Donem) => {
+    setDeletingDonem(donem)
+  }
+
+  const confirmDelete = () => {
+    if (deletingDonem) {
+      deleteSemester(deletingDonem.id)
     }
   }
 
-  const handleToggleActive = (id: string) => {
-    toggleActive(id)
-  }
+  // Silme işlemi başarılı olduğunda dialog'u kapat
+  useEffect(() => {
+    if (!isDeleting && deletingDonem) {
+      // İşlem tamamlandı, toast gösterildikten sonra dialog'u kapat
+      const timer = setTimeout(() => {
+        setDeletingDonem(null)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isDeleting, deletingDonem])
+
+  // Aktif durum artık otomatik olarak tarih aralığına göre belirleniyor
+  // toggleActive fonksiyonu kaldırıldı
 
   return (
     <div className="space-y-6">
@@ -105,6 +190,40 @@ export default function DonemPage() {
               <option value="active">Aktif</option>
               <option value="inactive">Pasif</option>
             </select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground whitespace-nowrap">Başlangıç:</label>
+              <Input
+                type="date"
+                className="w-auto min-w-[150px]"
+                value={startDateFilter}
+                max={endDateFilter || undefined}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Eğer bitiş tarihi varsa ve yeni başlangıç bitişten geç ise, bitiş tarihini temizle
+                  if (endDateFilter && value > endDateFilter) {
+                    setEndDateFilter('')
+                  }
+                  setStartDateFilter(value)
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground whitespace-nowrap">Bitiş:</label>
+              <Input
+                type="date"
+                className="w-auto min-w-[150px]"
+                value={endDateFilter}
+                min={startDateFilter || undefined}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Eğer başlangıç tarihi varsa ve yeni bitiş başlangıçtan önce ise, başlangıç tarihini temizle
+                  if (startDateFilter && value < startDateFilter) {
+                    setStartDateFilter('')
+                  }
+                  setEndDateFilter(value)
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -169,15 +288,16 @@ export default function DonemPage() {
                       <p className="text-sm text-muted-foreground">{formatDate(semester.endDate)}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleToggleActive(semester.id)}
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium transition-colors ${semester.isActive
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                          semester.isActive
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                        title={semester.isActive ? 'Bu dönem şu anki tarih aralığında olduğu için aktif' : 'Bu dönem şu anki tarih aralığında değil'}
                       >
                         {semester.isActive ? 'Aktif' : 'Pasif'}
-                      </button>
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
@@ -193,7 +313,7 @@ export default function DonemPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(semester.id, semester.name)}
+                          onClick={() => handleDelete(semester)}
                           className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -224,20 +344,31 @@ export default function DonemPage() {
         onOpenChange={setShowAddDialog}
         onSubmit={(data) => {
           createSemester(data)
-          setShowAddDialog(false)
         }}
         isLoading={isCreating}
       />
 
       <EditDonemDialog
         open={!!editingDonem}
-        onOpenChange={(open) => !open && setEditingDonem(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingDonem(null)
+          }
+        }}
         donem={editingDonem}
         onSubmit={(id, data) => {
           updateSemester({ id, dto: data })
-          setEditingDonem(null)
         }}
         isLoading={isUpdating}
+        hasActiveSemester={semesters.some(s => s.isActive)}
+      />
+
+      <DeleteDonemDialog
+        open={!!deletingDonem}
+        onOpenChange={(open) => !open && setDeletingDonem(null)}
+        donemName={deletingDonem?.name || ''}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
       />
     </div>
   )
