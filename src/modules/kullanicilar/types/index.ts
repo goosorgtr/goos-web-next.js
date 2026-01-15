@@ -1,3 +1,5 @@
+import { Gender } from '@/lib/supabase/types';
+
 export type UserRole = 'Admin' | 'Öğretmen' | 'Öğrenci' | 'Veli' | 'Servici' | 'Kantinci' | 'Veli Uzman';
 
 export interface Kullanici {
@@ -24,7 +26,7 @@ export interface CreateKullaniciDto {
     department?: string;
     password?: string;
     phone?: string;
-    gender?: 'male' | 'female' | 'other';
+    gender?: Gender;
     dateOfBirth?: string;
     address?: string;
     // Role-specific fields

@@ -88,7 +88,7 @@ export const kullanicilarService = {
             dateOfBirth: dto.dateOfBirth,
             address: dto.address,
             isActive: true
-        });
+        } as any); // Type assertion needed because Insert type omits 'id', but we need it for auth linking
 
         if (!response.success) {
             // Rollback: Delete auth user if profile creation fails
