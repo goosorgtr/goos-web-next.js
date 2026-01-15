@@ -151,7 +151,9 @@ export const kullanicilarService = {
         }
 
         // 2. Create user profile in users table
+        // IMPORTANT: Use the same ID from Supabase Auth to link auth user with profile
         const response = await supabaseApi.create('users', {
+            id: authData.user.id, // Link with Supabase Auth user ID
             firstName: dto.firstName,
             lastName: dto.lastName,
             email: dto.email,
