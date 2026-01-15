@@ -23,7 +23,7 @@ export default function RootLayout({
         <ReactQueryProvider>
           <AuthProvider>
             {children}
-            <Toaster position="top-right" richColors />
+            <Toaster position="top-right" richColors closeButton />
           </AuthProvider>
         </ReactQueryProvider>
       </body>

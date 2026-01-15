@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { courseService } from '../services/course.service';
-import type { CreateCourseDto, UpdateCourseDto } from '../types';
+import type { Course, CreateCourseDto, UpdateCourseDto } from '../types';
 import { toast } from 'sonner';
 
 export function useCourses() {
@@ -25,13 +25,43 @@ export function useCourses() {
     const updateMutation = useMutation({
         mutationFn: ({ id, dto }: { id: string; dto: UpdateCourseDto }) =>
             courseService.update(id, dto),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['courses'] });
+        onMutate: async ({ id, dto }) => {
+            await queryClient.cancelQueries({ queryKey: ['courses'] });
+            const previousCourses = queryClient.getQueryData<Course[]>(['courses']);
+
+            if (previousCourses) {
+                queryClient.setQueryData<Course[]>(['courses'],
+                    previousCourses.map((c) =>
+                        c.id === id
+                            ? {
+                                ...c,
+                                name: dto.name !== undefined ? dto.name : c.name,
+                                isActive: dto.isActive !== undefined ? dto.isActive : c.isActive
+                            }
+                            : c
+                    )
+                );
+            }
+
+            return { previousCourses };
+        },
+        onSuccess: (updatedCourse) => {
+            const current = queryClient.getQueryData<Course[]>(['courses']);
+            if (current) {
+                queryClient.setQueryData<Course[]>(
+                    ['courses'],
+                    current.map((c) => (c.id === updatedCourse.id ? { ...c, ...updatedCourse } : c))
+                );
+            }
             toast.success('Ders başarıyla güncellendi');
         },
-        onError: (error: Error) => {
+        onError: (error: Error, _variables, context) => {
+            if (context?.previousCourses) {
+                queryClient.setQueryData(['courses'], context.previousCourses);
+            }
             toast.error(error.message || 'Ders güncellenirken bir hata oluştu');
-        }
+        },
+        onSettled: () => {}
     });
 
     const deleteMutation = useMutation({

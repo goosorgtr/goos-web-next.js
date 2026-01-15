@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Bell, ChevronDown } from 'lucide-react'
+import { Search, Bell } from 'lucide-react'
 import { useAuth } from '@/contexts/auth-context'
+import { useCurrentSemester } from '@/modules/donem/hooks/useCurrentSemester'
 
 export default function AdminHeader() {
   const { user } = useAuth()
-  const [selectedSemester, setSelectedSemester] = useState('Güz 2024 Dönemi')
+  const { data: currentSemester } = useCurrentSemester()
 
   return (
     <header className="border-b bg-white">
@@ -24,21 +24,13 @@ export default function AdminHeader() {
           </div>
         </div>
 
-        {/* Dönem Seçici */}
-        <div className="ml-4 flex items-center gap-2 rounded-lg border px-3 py-1.5 hover:bg-gray-50">
+        <div className="ml-4 flex items-center gap-2 rounded-lg border px-3 py-1.5 bg-gray-50">
           <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <select 
-            className="border-none bg-transparent text-sm font-medium outline-none"
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-          >
-            <option>Güz 2024 Dönemi</option>
-            <option>Bahar 2024 Dönemi</option>
-            <option>Güz 2023 Dönemi</option>
-          </select>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            {currentSemester?.name || 'Aktif Dönem Yok'}
+          </span>
         </div>
 
         {/* Arama */}
