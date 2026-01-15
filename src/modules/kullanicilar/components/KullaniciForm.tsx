@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRoles } from '../hooks/useRoles'
 import type { CreateKullaniciDto } from '../types'
+import { Gender } from '@/lib/supabase/types'
 
 const kullaniciSchema = z.object({
     firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
@@ -15,7 +16,7 @@ const kullaniciSchema = z.object({
     email: z.string().email('Geçerli bir e-posta adresi giriniz'),
     roleId: z.string().min(1, 'Rol seçimi zorunludur'),
     phone: z.string().optional(),
-    gender: z.enum(['male', 'female', 'other'] as const).optional(),
+    gender: z.nativeEnum(Gender).optional(),
     dateOfBirth: z.string().optional(),
     address: z.string().optional(),
     password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır'),
@@ -73,7 +74,7 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
             {/* Kişisel Bilgiler */}
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-900">Kişisel Bilgiler</h3>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="firstName">Ad *</Label>
@@ -116,9 +117,8 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     >
                         <option value="">Seçiniz</option>
-                        <option value="male">Erkek</option>
-                        <option value="female">Kadın</option>
-                        <option value="other">Diğer</option>
+                        <option value={Gender.MALE}>Erkek</option>
+                        <option value={Gender.FEMALE}>Kadın</option>
                     </select>
                     {errors.gender && <p className="text-xs text-red-500">{errors.gender.message}</p>}
                 </div>
@@ -133,7 +133,7 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
             {/* Rol ve Yetki */}
             <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-sm font-semibold text-gray-900">Rol ve Yetki</h3>
-                
+
                 <div className="space-y-2">
                     <Label htmlFor="roleId">Rol *</Label>
                     <select
@@ -155,25 +155,25 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
             {/* Güvenlik */}
             <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-sm font-semibold text-gray-900">Güvenlik</h3>
-                
+
                 <div className="space-y-2">
                     <Label htmlFor="password">Şifre *</Label>
-                    <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="En az 8 karakter" 
-                        {...register('password')} 
+                    <Input
+                        id="password"
+                        type="password"
+                        placeholder="En az 8 karakter"
+                        {...register('password')}
                     />
                     {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Şifre Tekrar *</Label>
-                    <Input 
-                        id="confirmPassword" 
-                        type="password" 
-                        placeholder="Şifreyi tekrar girin" 
-                        {...register('confirmPassword')} 
+                    <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Şifreyi tekrar girin"
+                        {...register('confirmPassword')}
                     />
                     {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
                 </div>

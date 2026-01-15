@@ -96,7 +96,7 @@ export async function getById<T extends keyof Database['public']['Tables']>(
         const { data, error } = await supabase
             .from(table)
             .select('*')
-            .eq('id', id)
+            .eq('id', id as any)
             .single()
 
         if (error) {
@@ -163,7 +163,7 @@ export async function update<T extends keyof Database['public']['Tables']>(
         const { data: result, error } = await supabase
             .from(table)
             .update(snakeData)
-            .eq('id', id)
+            .eq('id', id as any)
             .select()
             .single()
 
@@ -194,7 +194,7 @@ export async function deleteById<T extends keyof Database['public']['Tables']>(
         const { error } = await supabase
             .from(table)
             .delete()
-            .eq('id', id)
+            .eq('id', id as any)
 
         if (error) {
             return handleSupabaseError(error)
