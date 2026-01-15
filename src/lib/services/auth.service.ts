@@ -6,6 +6,11 @@ export interface LoginCredentials {
   password: string
 }
 
+export interface TcLoginCredentials {
+  tcNo: string
+  password: string
+}
+
 export interface SignUpData extends LoginCredentials {
   firstName: string
   lastName: string
@@ -28,6 +33,52 @@ export const authService = {
     }
 
     return { success: true, data: data.user }
+  },
+
+  /**
+   * Sign in with TC Number and password
+   * First finds user by TC number, then uses their email to authenticate
+   */
+  async signInWithTcNo(credentials: TcLoginCredentials) {
+    try {
+      // Find user by TC number
+      const { data: users, error: queryError } = await supabase
+        .from('users')
+        .select('email, is_active')
+        .eq('tc_no', credentials.tcNo)
+        .limit(1)
+
+      if (queryError) {
+        return { success: false, message: 'Veritabanı hatası: ' + queryError.message }
+      }
+
+      if (!users || users.length === 0) {
+        return { success: false, message: 'TC Kimlik Numarası ile eşleşen kullanıcı bulunamadı' }
+      }
+
+      const user = users[0]
+
+      // Check if user is active
+      if (!user.is_active) {
+        return { success: false, message: 'Hesabınız aktif değil. Lütfen yöneticinize başvurun' }
+      }
+
+      // Check if email exists
+      if (!user.email) {
+        return { success: false, message: 'Kullanıcı e-posta adresi bulunamadı' }
+      }
+
+      // Use email to sign in with Supabase Auth
+      return await this.signIn({
+        email: user.email,
+        password: credentials.password
+      })
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Giriş yapılırken bir hata oluştu'
+      }
+    }
   },
 
   /**
