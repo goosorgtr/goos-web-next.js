@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Edit, AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import { useSemesters } from '@/modules/donem/hooks/useSemesters'
 import { AddDonemDialog } from '@/modules/donem/components/AddDonemDialog'
 import { EditDonemDialog } from '@/modules/donem/components/EditDonemDialog'
@@ -362,20 +362,13 @@ export function AdminDonemDashboard() {
                       <p className="text-sm text-muted-foreground">{formatDate(semester.endDate)}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-3">
-                        <Checkbox
+                      <div className="flex items-center justify-center gap-2">
+                        <Switch
                           checked={semester.isActive}
                           onCheckedChange={() => handleToggleActive(semester)}
                           disabled={isUpdating}
-                          className="cursor-pointer"
                         />
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                            semester.isActive
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
+                        <span className={`text-xs font-medium ${semester.isActive ? 'text-green-600' : 'text-gray-400'}`}>
                           {semester.isActive ? 'Aktif' : 'Pasif'}
                         </span>
                       </div>

@@ -61,10 +61,30 @@ const adminSidebarConfig: SidebarConfig = {
             icon: Users,
         },
         {
-            id: 'donem',
-            label: 'Dönem',
+            id: 'akademik',
+            label: 'Akademik Yönetim',
             href: '/admin/donem',
-            icon: Calendar,
+            icon: GraduationCap,
+            children: [
+                {
+                    id: 'donem',
+                    label: 'Dönem',
+                    href: '/admin/donem',
+                    icon: Calendar,
+                },
+                {
+                    id: 'siniflar',
+                    label: 'Sınıflar',
+                    href: '/admin/siniflar',
+                    icon: Users,
+                },
+                {
+                    id: 'dersler',
+                    label: 'Dersler',
+                    href: '/admin/dersler',
+                    icon: BookOpen,
+                },
+            ],
         },
         {
             id: 'ders-programi',
