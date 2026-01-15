@@ -25,7 +25,7 @@ export function useSemesters() {
     const queryClient = useQueryClient();
 
     // Query: Tüm dönemleri getir
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['semesters'],
         queryFn: () => semesterService.getSemesters()
     });
@@ -53,6 +53,7 @@ export function useSemesters() {
         data: data ?? [],
         isLoading,
         error,
+        refetch,
         // Create: useCreateSemester'dan gelen mutation
         createSemester: createMutation.mutate,
         // Update: useUpdateSemester'dan gelen mutation
