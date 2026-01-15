@@ -119,7 +119,7 @@ export const semesterService = {
         // Get all semesters and find the one that is marked as active
         // NOT: Artık otomatik tarih kontrolü yapmıyoruz, sadece isActive: true olan dönemi döndürüyoruz
         const allSemesters = await this.getSemesters();
-        
+
         const activeSemester = allSemesters.find(semester => semester.isActive);
 
         return activeSemester || null;
