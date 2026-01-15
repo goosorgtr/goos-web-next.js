@@ -24,7 +24,7 @@ export interface CreateKullaniciDto {
     department?: string;
     password?: string;
     phone?: string;
-    gender?: 'male' | 'female' | 'other';
+    gender?: 'male' | 'female' | 'other' | null;
     dateOfBirth?: string;
     address?: string;
     // Role-specific fields

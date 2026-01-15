@@ -80,18 +80,27 @@ export enum PaymentStatus {
 
 export interface User {
     id: string
-    roleId: string | null
+    role_id: string | null
     email: string | null
     address: string | null
-    profileImageUrl: string | null
-    dateOfBirth: string | null
-    firstName: string | null
-    lastName: string | null
+    profile_image_url: string | null
+    date_of_birth: string | null
+    first_name: string | null
+    last_name: string | null
     phone: string | null
-    gender: Gender | null
-    isActive: boolean | null
-    createdAt: string | null
-    updatedAt: string | null
+    gender: 'male' | 'female' | 'other' | null
+    is_active: boolean | null
+    created_at: string | null
+    updated_at: string | null
+    // CamelCase aliases for compatibility
+    roleId?: string | null
+    profileImageUrl?: string | null
+    dateOfBirth?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    isActive?: boolean | null
+    createdAt?: string | null
+    updatedAt?: string | null
 }
 
 export interface Role {
