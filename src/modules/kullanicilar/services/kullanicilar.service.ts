@@ -25,7 +25,7 @@ export const kullanicilarService = {
 
             // Tüm benzersiz rol ID'lerini topla (snake_case)
             const roleIds = Array.from(new Set(usersData.map((u: User) => u.role_id).filter(Boolean))) as string[];
-            
+
             if (roleIds.length === 0) {
                 console.warn('Kullanıcılarda rol ID bulunamadı');
                 return usersData.map((user: User) => ({
@@ -65,10 +65,11 @@ export const kullanicilarService = {
             return usersData.map((user: User) => {
                 const roleName = user.role_id ? rolesMap.get(user.role_id) : null;
                 const roleId = user.role_id;
-                
+
                 return {
                     id: user.id,
                     name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'İsimsiz',
+                    tcNo: user.tc_no || undefined,
                     avatar: user.profile_image_url || '/avatars/default.jpg',
                     lastSeen: user.updated_at ? `Son giriş: ${new Date(user.updated_at).toLocaleDateString('tr-TR')}` : '-',
                     role: roleName || getRoleDisplayName(roleId || '') || 'Tanımsız',
@@ -110,10 +111,11 @@ export const kullanicilarService = {
 
         return usersData.map((user: User) => {
             const roleId = user.role_id;
-            
+
             return {
                 id: user.id,
                 name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                tcNo: user.tc_no || undefined,
                 avatar: user.profile_image_url || '/avatars/default.jpg',
                 lastSeen: user.updated_at ? `Son giriş: ${new Date(user.updated_at).toLocaleDateString('tr-TR')}` : '-',
                 role: roleName || getRoleDisplayName(roleId || ''),
@@ -153,6 +155,7 @@ export const kullanicilarService = {
             firstName: dto.firstName,
             lastName: dto.lastName,
             email: dto.email,
+            tcNo: dto.tcNo,
             roleId: dto.roleId,
             phone: dto.phone,
             gender: dto.gender,
@@ -168,17 +171,17 @@ export const kullanicilarService = {
         }
 
         const user = response.data as User;
-        
+
         // Rol bilgisini çek
         const { data: roleData } = await supabase
             .from('roles')
             .select('id, name')
             .eq('id', user.role_id || '')
             .single();
-        
+
         const roleName = (roleData as Role | null)?.name || null;
         const roleId = user.role_id || null;
-        
+
         return {
             id: user.id,
             name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
@@ -199,6 +202,7 @@ export const kullanicilarService = {
             firstName: dto.firstName,
             lastName: dto.lastName,
             email: dto.email,
+            tcNo: dto.tcNo,
             roleId: dto.roleId
         });
 
@@ -207,17 +211,17 @@ export const kullanicilarService = {
         }
 
         const user = response.data as User;
-        
+
         // Rol bilgisini çek
         const { data: roleData } = await supabase
             .from('roles')
             .select('id, name')
             .eq('id', user.role_id || '')
             .single();
-        
+
         const roleName = (roleData as Role | null)?.name || null;
         const roleId = user.role_id || null;
-        
+
         return {
             id: user.id,
             name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),

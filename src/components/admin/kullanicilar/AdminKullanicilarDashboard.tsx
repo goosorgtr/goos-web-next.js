@@ -37,6 +37,7 @@ export function AdminKullanicilarDashboard() {
             user.name.toLowerCase().includes(searchLower) ||
             user.email.toLowerCase().includes(searchLower) ||
             user.userId.toLowerCase().includes(searchLower) ||
+            (user.tcNo && user.tcNo.includes(searchLower)) ||
             user.department.toLowerCase().includes(searchLower)
 
         const matchesRole =
@@ -88,7 +89,7 @@ export function AdminKullanicilarDashboard() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    
+
                     {/* Rol Filtresi */}
                     <div className="flex gap-2">
                         <select
@@ -181,74 +182,74 @@ export function AdminKullanicilarDashboard() {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${getAvatarColorByRole(user.role)} text-white font-semibold`}>
-                                                {user.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium">{user.name}</p>
-                                                <p className="text-xs text-muted-foreground">{user.lastSeen}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${user.roleColor}`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.email}
-                                        <p className="text-xs text-muted-foreground">ID: {user.userId}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block h-2 w-2 rounded-full ${user.status === 'Aktif' ? 'bg-green-600' : 'bg-gray-400'} mr-2`} />
-                                        <span className="text-sm font-medium">{user.status}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
-                                                className="p-1 hover:bg-gray-100 rounded"
-                                            >
-                                                <MoreVertical className="h-5 w-5 text-gray-400" />
-                                            </button>
-                                            {openMenuId === user.id && (
-                                                <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border bg-white shadow-lg">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedUser(user)
-                                                            setEditDialogOpen(true)
-                                                            setOpenMenuId(null)
-                                                        }}
-                                                        className="flex w-full items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
-                                                    >
-                                                        <Edit className="h-4 w-4" /> Düzenle
-                                                    </button>
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
-                                                                try {
-                                                                    await deleteKullanici(user.id)
-                                                                    toast.success('Kullanıcı başarıyla silindi')
-                                                                } catch (error) {
-                                                                    toast.error('Kullanıcı silinemedi')
-                                                                }
-                                                            }
-                                                            setOpenMenuId(null)
-                                                        }}
-                                                        className="flex w-full items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
-                                                        disabled={isDeleting}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" /> {isDeleting ? 'Siliniyor...' : 'Sil'}
-                                                    </button>
+                                    <tr key={user.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${getAvatarColorByRole(user.role)} text-white font-semibold`}>
+                                                    {user.name.charAt(0)}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )))}
+                                                <div>
+                                                    <p className="font-medium">{user.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{user.lastSeen}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${user.roleColor}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.email}
+                                            <p className="text-xs text-muted-foreground">ID: {user.userId}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-block h-2 w-2 rounded-full ${user.status === 'Aktif' ? 'bg-green-600' : 'bg-gray-400'} mr-2`} />
+                                            <span className="text-sm font-medium">{user.status}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                                                    className="p-1 hover:bg-gray-100 rounded"
+                                                >
+                                                    <MoreVertical className="h-5 w-5 text-gray-400" />
+                                                </button>
+                                                {openMenuId === user.id && (
+                                                    <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border bg-white shadow-lg">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedUser(user)
+                                                                setEditDialogOpen(true)
+                                                                setOpenMenuId(null)
+                                                            }}
+                                                            className="flex w-full items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+                                                        >
+                                                            <Edit className="h-4 w-4" /> Düzenle
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
+                                                                    try {
+                                                                        await deleteKullanici(user.id)
+                                                                        toast.success('Kullanıcı başarıyla silindi')
+                                                                    } catch (error) {
+                                                                        toast.error('Kullanıcı silinemedi')
+                                                                    }
+                                                                }
+                                                                setOpenMenuId(null)
+                                                            }}
+                                                            className="flex w-full items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                                                            disabled={isDeleting}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" /> {isDeleting ? 'Siliniyor...' : 'Sil'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )))}
                         </tbody>
                     </table>
                 </div>

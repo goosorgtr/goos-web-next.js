@@ -86,6 +86,7 @@ export interface User {
     date_of_birth: string | null
     first_name: string | null
     last_name: string | null
+    tc_no: string | null
     phone: string | null
     gender: 'male' | 'female' | 'other' | null
     is_active: boolean | null
@@ -97,6 +98,7 @@ export interface User {
     dateOfBirth?: string | null
     firstName?: string | null
     lastName?: string | null
+    tcNo?: string | null
     isActive?: boolean | null
     createdAt?: string | null
     updatedAt?: string | null

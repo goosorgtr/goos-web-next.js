@@ -5,6 +5,7 @@ export type UserRole = 'Admin' | 'Öğretmen' | 'Öğrenci' | 'Veli' | 'Servici'
 export interface Kullanici {
     id: string;
     name: string;
+    tcNo?: string;
     avatar: string;
     lastSeen: string;
     role: UserRole | string; // Allow string for roleId from database
@@ -21,6 +22,7 @@ export interface CreateKullaniciDto {
     lastName?: string;
     name?: string; // For backward compatibility
     email: string;
+    tcNo?: string;
     role?: UserRole; // For backward compatibility
     roleId?: string; // Database field
     department?: string;

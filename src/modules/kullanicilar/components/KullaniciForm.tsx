@@ -13,6 +13,7 @@ import { Gender } from '@/lib/supabase/types'
 const kullaniciSchema = z.object({
     firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
     lastName: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
+    tcNo: z.string().length(11, 'TC Kimlik No 11 haneli olmalıdır').regex(/^[0-9]+$/, 'Sadece rakam giriniz'),
     email: z.string().email('Geçerli bir e-posta adresi giriniz'),
     roleId: z.string().min(1, 'Rol seçimi zorunludur'),
     phone: z.string().optional(),
@@ -45,6 +46,7 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
         defaultValues: {
             firstName: '',
             lastName: '',
+            tcNo: '',
             email: '',
             roleId: '',
             phone: '',
@@ -87,6 +89,13 @@ export function KullaniciForm({ initialData, onSubmit, onCancel, isSubmitting }:
                         <Input id="lastName" placeholder="Soyad" {...register('lastName')} />
                         {errors.lastName && <p className="text-xs text-red-500">{errors.lastName.message}</p>}
                     </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="tcNo">TC Kimlik No *</Label>
+                        <Input id="tcNo" placeholder="11 haneli TC Kimlik No" maxLength={11} {...register('tcNo')} />
+                        {errors.tcNo && <p className="text-xs text-red-500">{errors.tcNo.message}</p>}
+                    </div>
+
                 </div>
 
                 <div className="space-y-2">
