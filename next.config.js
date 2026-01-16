@@ -13,12 +13,17 @@ const nextConfig = {
   },
   reactStrictMode: true,
   swcMinify: true,
-  
+
+  // ESLint'i build sırasında ignore et (CI'da ayrı çalışıyor)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Performans optimizasyonları
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Webpack optimizasyonları
   webpack: (config, { dev, isServer }) => {
     // Development modunda daha hızlı build için
@@ -30,10 +35,10 @@ const nextConfig = {
         splitChunks: false,
       }
     }
-    
+
     return config
   },
-  
+
   // Experimental optimizasyonlar
   experimental: {
     optimizePackageImports: [
