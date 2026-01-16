@@ -24,6 +24,7 @@ import {
     FileEdit,
     Upload,
     User,
+    NotebookPen,
     type LucideIcon,
 } from 'lucide-react'
 import type { Role } from '@/types/roles'
@@ -114,9 +115,15 @@ const adminSidebarConfig: SidebarConfig = {
         },
         {
             id: 'ders-notlari',
-            label: 'Ders Notları',
+            label: 'Sınavlar',
             href: '/admin/ders-notlari',
             icon: FileText,
+        },
+        {
+            id: 'odevler',
+            label: 'Ödevler',
+            href: '/admin/odevler',
+            icon: NotebookPen,
         },
         {
             id: 'devamsizlik',

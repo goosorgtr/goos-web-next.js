@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Edit, AlertCircle, RefreshCw, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
@@ -86,10 +85,6 @@ export function AdminCoursesDashboard() {
     const searchLower = searchQuery.toLowerCase()
     return searchQuery === '' || course.name.toLowerCase().includes(searchLower)
   })
-
-  const handleToggleActive = (course: Course) => {
-    updateCourse({ id: course.id, dto: { isActive: !course.isActive } })
-  }
 
   if (error) {
     return (
@@ -245,14 +240,13 @@ export function AdminCoursesDashboard() {
                 <thead className="bg-gray-50/80 border-b">
                   <tr>
                     <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Ders Adı</th>
-                    <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">Durum</th>
                     <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredCourses.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-16 text-center">
+                      <td colSpan={2} className="px-6 py-16 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <div className="rounded-full bg-gray-100 p-4">
                             <Search className="h-8 w-8 text-gray-400" />
@@ -266,18 +260,6 @@ export function AdminCoursesDashboard() {
                       <tr key={course.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4">
                           <p className="text-sm font-medium text-gray-900">{course.name}</p>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Switch
-                              checked={course.isActive}
-                              onCheckedChange={(checked) => updateCourse({ id: course.id, dto: { isActive: checked } })}
-                              disabled={isUpdating}
-                            />
-                            <span className={`text-xs font-medium ${course.isActive ? 'text-green-600' : 'text-gray-400'}`}>
-                              {course.isActive ? 'Aktif' : 'Pasif'}
-                            </span>
-                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">

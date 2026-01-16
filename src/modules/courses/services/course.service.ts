@@ -17,8 +17,8 @@ export const courseService = {
         const courses = response.data.map((course: any) => ({
             id: course.id,
             name: course.name || '',
-            isActive: course.isActive ?? course.is_active ?? true,
-            updatedAt: (course.updatedAt ?? course.updated_at) || ''
+            isActive: course.is_active ?? true,
+            updatedAt: course.updated_at || ''
         }));
 
         return courses;
@@ -35,8 +35,8 @@ export const courseService = {
         return {
             id: course.id,
             name: course.name || '',
-            isActive: course.isActive ?? course.is_active ?? true,
-            updatedAt: (course.updatedAt ?? course.updated_at) || ''
+            isActive: course.is_active ?? true,
+            updatedAt: course.updated_at || ''
         };
     },
 
@@ -61,8 +61,8 @@ export const courseService = {
         return {
             id: course.id,
             name: course.name || '',
-            isActive: course.isActive ?? course.is_active ?? true,
-            updatedAt: (course.updatedAt ?? course.updated_at) || ''
+            isActive: course.is_active ?? true,
+            updatedAt: course.updated_at || ''
         };
     },
 
@@ -81,8 +81,8 @@ export const courseService = {
         return {
             id: course.id,
             name: course.name || '',
-            isActive: course.isActive ?? course.is_active ?? true,
-            updatedAt: (course.updatedAt ?? course.updated_at) || ''
+            isActive: course.is_active ?? true,
+            updatedAt: course.updated_at || ''
         };
     },
 
@@ -97,7 +97,7 @@ export const courseService = {
     // Teacher Courses (Öğretmen-Ders Atamaları)
     async getTeacherCourses(filters?: { courseId?: string; semesterId?: string }): Promise<TeacherCourse[]> {
         let query = supabase
-            .from('teacher_courses' as any)
+            .from('teacher_courses')
             .select('*');
 
         if (filters?.courseId) {
@@ -115,22 +115,10 @@ export const courseService = {
 
         // İlişkili verileri ayrı ayrı çek
         const items = data || [];
-        const teacherIds = items
-            .map((i: any) => i.teacher_id)
-            .filter(Boolean)
-            .filter((v: any, idx: number, arr: any[]) => arr.indexOf(v) === idx);
-        const courseIds = items
-            .map((i: any) => i.course_id)
-            .filter(Boolean)
-            .filter((v: any, idx: number, arr: any[]) => arr.indexOf(v) === idx);
-        const classIds = items
-            .map((i: any) => i.class_id)
-            .filter(Boolean)
-            .filter((v: any, idx: number, arr: any[]) => arr.indexOf(v) === idx);
-        const semesterIds = items
-            .map((i: any) => i.semester_id)
-            .filter(Boolean)
-            .filter((v: any, idx: number, arr: any[]) => arr.indexOf(v) === idx);
+        const teacherIds = [...new Set(items.map((i: any) => i.teacher_id).filter(Boolean))];
+        const courseIds = [...new Set(items.map((i: any) => i.course_id).filter(Boolean))];
+        const classIds = [...new Set(items.map((i: any) => i.class_id).filter(Boolean))];
+        const semesterIds = [...new Set(items.map((i: any) => i.semester_id).filter(Boolean))];
 
         const [teachersRes, coursesRes, classesRes, semestersRes] = await Promise.all([
             teacherIds.length > 0 
@@ -156,7 +144,7 @@ export const courseService = {
         const classesMap = new Map((classesRes.data || []).map((c: any) => [c.id, c]));
         const semestersMap = new Map((semestersRes.data || []).map((s: any) => [s.id, s]));
 
-        const mapped = items.map((item: any) => {
+        return items.map((item: any) => {
             const teacher = teachersMap.get(item.teacher_id);
             const course = coursesMap.get(item.course_id);
             const cls = classesMap.get(item.class_id);
@@ -189,29 +177,13 @@ export const courseService = {
                 } : undefined
             };
         });
-
-        return mapped.sort((a, b) => {
-            const aTeacher = `${a.teacher?.lastName ?? ''} ${a.teacher?.firstName ?? ''}`.trim().toLowerCase();
-            const bTeacher = `${b.teacher?.lastName ?? ''} ${b.teacher?.firstName ?? ''}`.trim().toLowerCase();
-            if (aTeacher !== bTeacher) return aTeacher.localeCompare(bTeacher);
-
-            const aCourse = (a.course?.name ?? '').trim().toLowerCase();
-            const bCourse = (b.course?.name ?? '').trim().toLowerCase();
-            if (aCourse !== bCourse) return aCourse.localeCompare(bCourse);
-
-            const aClass = (a.class?.name ?? '').trim().toLowerCase();
-            const bClass = (b.class?.name ?? '').trim().toLowerCase();
-            if (aClass !== bClass) return aClass.localeCompare(bClass);
-
-            return a.id.localeCompare(b.id);
-        });
     },
 
     async createTeacherCourse(dto: CreateTeacherCourseDto): Promise<TeacherCourse> {
         const id = crypto.randomUUID();
 
         const { data, error } = await supabase
-            .from('teacher_courses' as any)
+            .from('teacher_courses')
             .insert({
                 id,
                 teacher_id: dto.teacherId,
@@ -246,8 +218,8 @@ export const courseService = {
         if (dto.semesterId !== undefined) updateData.semester_id = dto.semesterId;
         if (dto.isActive !== undefined) updateData.is_active = dto.isActive;
 
-        const teacherCoursesTable: any = supabase.from('teacher_courses' as any)
-        const { data, error } = await teacherCoursesTable
+        const { data, error } = await supabase
+            .from('teacher_courses')
             .update(updateData)
             .eq('id', id)
             .select()
@@ -270,7 +242,7 @@ export const courseService = {
 
     async deleteTeacherCourse(id: string): Promise<void> {
         const { error } = await supabase
-            .from('teacher_courses' as any)
+            .from('teacher_courses')
             .delete()
             .eq('id', id);
 

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Search, Trash2, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { useTeacherCourses } from '../hooks/useTeacherCourses'
 import { AssignTeacherDialog } from './AssignTeacherDialog'
 import type { TeacherCourse } from '../types'
@@ -39,18 +38,12 @@ export function TeacherAssignmentsTable({
   const {
     data: assignments,
     isLoading,
-    updateTeacherCourse,
     deleteTeacherCourse,
-    isUpdating,
     isDeleting
   } = useTeacherCourses({
     courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
     semesterId: selectedSemesterId !== 'all' ? selectedSemesterId : undefined
   })
-
-  const handleToggleActive = (assignment: TeacherCourse) => {
-    updateTeacherCourse({ id: assignment.id, dto: { isActive: !assignment.isActive } })
-  }
 
   const filteredAssignments = assignments.filter((assignment) => {
     if (!searchQuery) return true
@@ -78,7 +71,6 @@ export function TeacherAssignmentsTable({
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase text-gray-600">Ders</th>
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase text-gray-600">Sınıf</th>
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase text-gray-600">Dönem</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase text-gray-600">Durum</th>
               <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase text-gray-600">İşlemler</th>
             </tr>
           </thead>
@@ -89,7 +81,6 @@ export function TeacherAssignmentsTable({
                 <td className="px-6 py-4"><div className="h-5 w-24 animate-pulse rounded bg-gray-200" /></td>
                 <td className="px-6 py-4"><div className="h-5 w-16 animate-pulse rounded bg-gray-200" /></td>
                 <td className="px-6 py-4"><div className="h-5 w-24 animate-pulse rounded bg-gray-200" /></td>
-                <td className="px-6 py-4"><div className="mx-auto h-6 w-20 animate-pulse rounded bg-gray-200" /></td>
                 <td className="px-6 py-4"><div className="mx-auto h-8 w-24 animate-pulse rounded bg-gray-200" /></td>
               </tr>
             ))}
@@ -109,14 +100,13 @@ export function TeacherAssignmentsTable({
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Ders</th>
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Sınıf</th>
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Dönem</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">Durum</th>
               <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filteredAssignments.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-16 text-center">
+                <td colSpan={5} className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="rounded-full bg-gray-100 p-4">
                       <Search className="h-8 w-8 text-gray-400" />
@@ -143,18 +133,6 @@ export function TeacherAssignmentsTable({
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-700">{assignment.semester?.name || '-'}</p>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Switch
-                          checked={assignment.isActive}
-                          onCheckedChange={() => handleToggleActive(assignment)}
-                          disabled={isUpdating}
-                        />
-                        <span className={`text-xs font-medium ${assignment.isActive ? 'text-green-600' : 'text-gray-400'}`}>
-                          {assignment.isActive ? 'Aktif' : 'Pasif'}
-                        </span>
-                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
