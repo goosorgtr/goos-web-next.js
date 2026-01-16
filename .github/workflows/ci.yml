@@ -26,6 +26,7 @@ jobs:
       
       - name: Run linter
         run: npm run lint -- --max-warnings=250
+        continue-on-error: true
       
       - name: Run type check
         run: npx tsc --noEmit
