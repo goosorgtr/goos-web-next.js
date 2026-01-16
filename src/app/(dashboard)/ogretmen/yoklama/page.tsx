@@ -127,7 +127,7 @@ export default function YoklamaPage() {
                         <div className="flex items-center gap-3">
                             <h2 className="text-lg font-bold text-gray-900">Devamsız Öğrenci Listesi</h2>
                             <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                                Sadece 'YOK' Olanlar
+                                Sadece &apos;YOK&apos; Olanlar
                             </span>
                         </div>
                         <button className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700">

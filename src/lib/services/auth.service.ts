@@ -183,7 +183,7 @@ export const authService = {
         .from('users')
         .select('email, is_active')
         .eq('tc_no', credentials.tcNo)
-        .limit(1)
+        .limit(1) as any // Type assertion
 
       console.log('🔵 [AUTH SERVICE] Kullanıcı sorgusu tamamlandı:', {
         duration: Date.now() - queryStart + 'ms',
@@ -272,7 +272,7 @@ export const authService = {
         phone: userData.phone || null,
         role_id: userData.roleId,
         is_active: true,
-      })
+      } as any) // Type assertion to bypass Supabase type inference issue
       .select()
       .single()
 

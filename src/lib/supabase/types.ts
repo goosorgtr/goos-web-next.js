@@ -826,8 +826,8 @@ export interface Database {
                 Update: Partial<Omit<ActivityLog, 'id' | 'createdAt'>>
             }
         }
-        Views: {}
-        Functions: {}
+        Views: Record<string, never>
+        Functions: Record<string, never>
         Enums: {
             attendance_status: AttendanceStatus
             homework_status: HomeworkStatus

@@ -25,6 +25,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+# NOT: .env.test dosyası TAKIMLA PAYLAŞILIYOR - ignore etmeyin!
 
 # vercel
 .vercel

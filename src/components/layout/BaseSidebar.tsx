@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { GraduationCap } from 'lucide-react'
 import { SidebarItem } from './SidebarItem'
 import { SidebarDropdown } from './SidebarDropdown'
@@ -60,8 +59,9 @@ export function BaseSidebar({ config, user }: BaseSidebarProps) {
                                     id={item.id}
                                     label={item.label}
                                     icon={item.icon}
-                                    children={item.children}
-                                />
+                                >
+                                    {item.children}
+                                </SidebarDropdown>
                             )
                         }
 

@@ -29,10 +29,10 @@ export function DeleteDonemDialog({ open, onOpenChange, donemName, onConfirm, is
                         </div>
                     </div>
                 </DialogHeader>
-                
+
                 <div className="py-4">
                     <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">"{donemName}"</span> dönemini silmek istediğinizden emin misiniz?
+                        <span className="font-semibold text-foreground">&quot;{donemName}&quot;</span> dönemini silmek istediğinizden emin misiniz?
                     </p>
                 </div>
 

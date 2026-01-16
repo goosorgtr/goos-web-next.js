@@ -29,10 +29,10 @@ export function DeleteCourseDialog({ open, onOpenChange, courseName, onConfirm, 
                         </div>
                     </div>
                 </DialogHeader>
-                
+
                 <div className="py-4">
                     <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">"{courseName}"</span> dersini silmek istediğinizden emin misiniz?
+                        <span className="font-semibold text-foreground">&quot;{courseName}&quot;</span> dersini silmek istediğinizden emin misiniz?
                     </p>
                 </div>
 

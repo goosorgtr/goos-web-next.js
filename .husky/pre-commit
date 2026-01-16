@@ -1,0 +1,27 @@
+# Husky pre-commit hook
+# This runs automatically before every commit
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linter
+echo "📝 Running linter..."
+npm run lint --quiet || {
+  echo "❌ Linter failed. Please fix the errors before committing."
+  exit 1
+}
+
+# Run type check
+echo "🔧 Running type check..."
+npx tsc --noEmit || {
+  echo "❌ Type check failed. Please fix the errors before committing."
+  exit 1
+}
+
+# Run tests for changed files
+echo "🧪 Running tests..."
+npm test -- --bail --findRelatedTests --passWithNoTests || {
+  echo "❌ Tests failed. Please fix the errors before committing."
+  exit 1
+}
+
+echo "✅ All pre-commit checks passed!"

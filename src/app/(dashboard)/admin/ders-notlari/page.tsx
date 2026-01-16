@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, Edit, ChevronDown, Upload, X } from 'lucide-react'
+import { Eye, Edit, ChevronDown, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -81,7 +81,7 @@ export default function DersNotlariPage() {
   const [showBranchDropdown, setShowBranchDropdown] = useState(false)
 
   // Dialog states
-  const [selectedGrade, setSelectedGrade] = useState<any>(null)
+  const [selectedGrade, setSelectedGrade] = useState<typeof MOCK_GRADES[0] | null>(null)
   const [isViewOpen, setIsViewOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
 
