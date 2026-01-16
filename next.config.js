@@ -19,6 +19,11 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // TypeScript check'i build sırasında ignore et (CI'da ayrı çalışıyor)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Performans optimizasyonları
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
