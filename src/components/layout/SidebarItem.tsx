@@ -33,10 +33,14 @@ export function SidebarItem({
         closeMobileSidebar()
     }
 
+    // Development modunda prefetch'i kapat - daha hızlı geçişler için
+    const isDevelopment = process.env.NODE_ENV === 'development'
+
     return (
         <Link
             href={href}
             onClick={handleClick}
+            prefetch={!isDevelopment} // Development'ta prefetch kapalı
             className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isChild && 'pl-11',

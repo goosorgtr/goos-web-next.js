@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { supabaseApi } from '@/lib/supabase/api'
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // Fetch user profile from database
-  const fetchUserProfile = async (supabaseUser: SupabaseUser, shouldRedirect = false) => {
+  const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser, shouldRedirect = false) => {
     try {
       const response = await supabaseApi.getById('users', supabaseUser.id)
 
@@ -145,6 +145,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mockUser) {
           setUser(mockUser)
         }
+        // If shouldRedirect is true but user not found, redirect to admin
+        if (shouldRedirect) {
+          router.push('/admin')
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -153,53 +157,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mockUser) {
         setUser(mockUser)
       }
+      // If shouldRedirect is true, redirect even on error
+      if (shouldRedirect) {
+        router.push('/admin')
+      }
     } finally {
       setLoading(false)
     }
-  }
+  }, [pathname, router])
 
   // Initialize auth state
   useEffect(() => {
+    let isMounted = true
+    let subscription: { unsubscribe: () => void } | null = null
+
     const initAuth = async () => {
       try {
-        // Check for existing session
-        const { data: { session } } = await supabase.auth.getSession()
+        // Check for existing session with abort signal
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (!isMounted) return
+
+        if (error) {
+          console.error('Error getting session:', error)
+          setLoading(false)
+          return
+        }
         
         if (session?.user) {
           await fetchUserProfile(session.user)
         } else {
           // Fallback to mock user for development
           const mockUser = getUserFromPath(pathname)
-          if (mockUser) {
+          if (mockUser && isMounted) {
             setUser(mockUser)
           }
-          setLoading(false)
+          if (isMounted) {
+            setLoading(false)
+          }
         }
       } catch (error) {
-        console.error('Error initializing auth:', error)
-        setLoading(false)
+        if (isMounted) {
+          console.error('Error initializing auth:', error)
+          setLoading(false)
+        }
       }
     }
 
     initAuth()
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Redirect to dashboard after successful login
-          await fetchUserProfile(session.user, true)
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-          router.push('/giris')
+    // Listen for auth changes with proper cleanup
+    try {
+      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (!isMounted) return
+
+          try {
+            if (event === 'SIGNED_IN' && session?.user) {
+              // Redirect to dashboard after successful login
+              await fetchUserProfile(session.user, true)
+            } else if (event === 'SIGNED_OUT') {
+              if (isMounted) {
+                setUser(null)
+                router.push('/giris')
+              }
+            }
+          } catch (error) {
+            if (isMounted) {
+              console.error('Error in auth state change:', error)
+            }
+          }
         }
-      }
-    )
+      )
+      subscription = authSubscription
+    } catch (error) {
+      console.error('Error setting up auth listener:', error)
+    }
 
     return () => {
-      subscription.unsubscribe()
+      isMounted = false
+      if (subscription) {
+        subscription.unsubscribe()
+      }
     }
-  }, [])
+  }, [pathname, router, fetchUserProfile])
 
   // URL değiştiğinde kullanıcıyı güncelle (backward compatibility)
   useEffect(() => {

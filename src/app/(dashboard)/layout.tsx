@@ -2,41 +2,60 @@
 
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense, lazy, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useSidebarStore } from '@/store/sidebar-store'
-import AdminSidebar from '@/components/admin/layout/AdminSidebar'
-import AdminHeader from '@/components/admin/layout/AdminHeader'
-import VeliSidebar from '@/components/veli/layout/VeliSidebar'
-import OgrenciSidebar from '@/components/ogrenci/layout/OgrenciSidebar'
-import OgretmenSidebar from '@/components/ogretmen/layout/OgretmenSidebar'
-import KantinciSidebar from '@/components/kantinci/layout/KantinciSidebar'
-import ServiciSidebar from '@/components/servici/layout/ServiciSidebar'
 import { cn } from '@/lib/utils'
+
+// Lazy load sidebar'lar - sadece kullanılan yüklenecek
+const AdminSidebar = lazy(() => import('@/components/admin/layout/AdminSidebar').then(m => ({ default: m.default })))
+const VeliSidebar = lazy(() => import('@/components/veli/layout/VeliSidebar').then(m => ({ default: m.default })))
+const OgrenciSidebar = lazy(() => import('@/components/ogrenci/layout/OgrenciSidebar').then(m => ({ default: m.default })))
+const OgretmenSidebar = lazy(() => import('@/components/ogretmen/layout/OgretmenSidebar').then(m => ({ default: m.default })))
+const KantinciSidebar = lazy(() => import('@/components/kantinci/layout/KantinciSidebar').then(m => ({ default: m.default })))
+const ServiciSidebar = lazy(() => import('@/components/servici/layout/ServiciSidebar').then(m => ({ default: m.default })))
+
+// Loading fallback
+const SidebarLoader = () => (
+  <div className="flex h-full items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary"></div>
+  </div>
+)
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const { isMobileOpen, toggleMobileSidebar, closeMobileSidebar } = useSidebarStore()
 
-  // Rol bazlı sidebar seçimi
-  const renderSidebar = () => {
+  // Rol bazlı sidebar seçimi - memoize edilmiş
+  const SidebarComponent = useMemo(() => {
     if (!user) return null
 
     switch (user.role) {
       case 'ADMIN':
-        return <AdminSidebar />
+        return AdminSidebar
       case 'VELI':
-        return <VeliSidebar />
+        return VeliSidebar
       case 'OGRENCI':
-        return <OgrenciSidebar />
+        return OgrenciSidebar
       case 'OGRETMEN':
-        return <OgretmenSidebar />
+        return OgretmenSidebar
       case 'KANTINCI':
-        return <KantinciSidebar />
+        return KantinciSidebar
       case 'SERVICI':
-        return <ServiciSidebar />
+        return ServiciSidebar
       default:
         return null
     }
+  }, [user?.role])
+
+  const renderSidebar = () => {
+    if (!SidebarComponent) return null
+
+    return (
+      <Suspense fallback={<SidebarLoader />}>
+        <SidebarComponent />
+      </Suspense>
+    )
   }
 
   // Rol bazlı header seçimi

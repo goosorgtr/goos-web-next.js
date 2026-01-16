@@ -31,47 +31,77 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      let result
+
       // Login with Email
       if (useEmail && email) {
-        const result = await authService.signIn({
+        result = await authService.signIn({
           email,
           password
         })
-
-        if (result.success) {
-          toast.success('Giriş başarılı!')
-          // Auth context will handle user fetching and redirect
-          return
-        } else {
-          setError(result.message || 'Giriş başarısız!')
-          setLoading(false)
-          return
-        }
-      }
-
+      } 
       // Login with TC Number
-      if (!useEmail && tcNumber) {
-        const result = await authService.signInWithTcNo({
+      else if (!useEmail && tcNumber) {
+        result = await authService.signInWithTcNo({
           tcNo: tcNumber,
           password
         })
-
-        if (result.success) {
-          toast.success('Giriş başarılı!')
-          // Auth context will handle user fetching and redirect
-          return
-        } else {
-          setError(result.message || 'TC Kimlik Numarası veya şifre hatalı!')
-          setLoading(false)
-          return
-        }
+      } else {
+        setError('Lütfen tüm alanları doldurun!')
+        setLoading(false)
+        return
       }
 
-      // Validation
-      setError('Lütfen tüm alanları doldurun!')
+      if (result.success) {
+        toast.success('Giriş başarılı!')
+        
+        // Wait a bit for session to be set
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Get current session and redirect
+        const sessionResult = await authService.getSession()
+        if (sessionResult.success && sessionResult.data?.user) {
+          // Fetch user profile and redirect
+          const { supabase } = await import('@/lib/supabase/client')
+          const { supabaseApi } = await import('@/lib/supabase/api')
+          
+          try {
+            const userResponse = await supabaseApi.getById('users', sessionResult.data.user.id)
+            
+            if (userResponse.success && userResponse.data) {
+              const userData = userResponse.data
+              const roleResponse = await supabaseApi.getById('roles', userData.roleId || '')
+              const roleName = roleResponse.success ? roleResponse.data.name : 'OGRENCI'
+              
+              const roleMap: Record<string, string> = {
+                'admin': '/admin',
+                'veli': '/veli',
+                'ogrenci': '/ogrenci',
+                'ogretmen': '/ogretmen',
+                'kantinci': '/kantinci',
+                'servici': '/servici'
+              }
+              
+              const redirectPath = roleMap[roleName.toLowerCase()] || '/admin'
+              router.push(redirectPath)
+              return
+            }
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError)
+            // Redirect to admin as fallback
+            router.push('/admin')
+            return
+          }
+        }
+        
+        // Fallback redirect if session check fails
+        router.push('/admin')
+      } else {
+        setError(result.message || 'Giriş başarısız!')
+        setLoading(false)
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Bir hata oluştu')
-    } finally {
       setLoading(false)
     }
   }

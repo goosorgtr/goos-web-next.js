@@ -8,8 +8,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
 }
 
-// Create typed Supabase client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Create typed Supabase client with optimized settings
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+  },
+  global: {
+    headers: {
+      'x-client-info': 'goos-web-nextjs',
+    },
+  },
+});
 
 // Export types for convenience
 export type { Database } from './types';
