@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth, MOCK_USERS } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import authService from "@/lib/services/auth.service"
 import { toast } from "sonner"
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Try Supabase Auth first if using email
+      // Login with Email
       if (useEmail && email) {
         const result = await authService.signIn({
           email,
@@ -49,47 +49,26 @@ export default function LoginPage() {
         }
       }
 
-      // Fallback to mock system for development
-      const MOCK_TC = '12345678912'
+      // Login with TC Number
+      if (!useEmail && tcNumber) {
+        const result = await authService.signInWithTcNo({
+          tcNo: tcNumber,
+          password
+        })
 
-      if (tcNumber !== MOCK_TC) {
-        setError('TC Kimlik Numarası hatalı!')
-        setLoading(false)
-        return
+        if (result.success) {
+          toast.success('Giriş başarılı!')
+          // Auth context will handle user fetching and redirect
+          return
+        } else {
+          setError(result.message || 'TC Kimlik Numarası veya şifre hatalı!')
+          setLoading(false)
+          return
+        }
       }
 
-      const passwordLower = password.toLowerCase().trim()
-
-      switch (passwordLower) {
-        case 'admin':
-          setUser(MOCK_USERS.ADMIN)
-          router.push('/admin')
-          break
-        case 'veli':
-          setUser(MOCK_USERS.VELI)
-          router.push('/veli')
-          break
-        case 'ogrenci':
-        case 'öğrenci':
-          setUser(MOCK_USERS.OGRENCI)
-          router.push('/ogrenci')
-          break
-        case 'ogretmen':
-        case 'öğretmen':
-          setUser(MOCK_USERS.OGRETMEN)
-          router.push('/ogretmen')
-          break
-        case 'kantinci':
-          setUser(MOCK_USERS.KANTINCI)
-          router.push('/kantinci')
-          break
-        case 'servici':
-          setUser(MOCK_USERS.SERVICI)
-          router.push('/servici')
-          break
-        default:
-          setError('Geçersiz şifre! Lütfen rol adını girin (admin, veli, ogrenci, ogretmen, kantinci, servici)')
-      }
+      // Validation
+      setError('Lütfen tüm alanları doldurun!')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Bir hata oluştu')
     } finally {

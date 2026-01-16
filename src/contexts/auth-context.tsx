@@ -92,17 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // Fetch user profile from database
-  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
+  const fetchUserProfile = async (supabaseUser: SupabaseUser, shouldRedirect = false) => {
     try {
       const response = await supabaseApi.getById('users', supabaseUser.id)
-      
+
       if (response.success && response.data) {
         const userData = response.data
-        
+
         // Get role name
         const roleResponse = await supabaseApi.getById('roles', userData.roleId || '')
         const roleName = roleResponse.success ? roleResponse.data.name : 'OGRENCI'
-        
+
         // Map role name to Role type
         const roleMap: Record<string, Role> = {
           'admin': 'ADMIN',
@@ -124,6 +124,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setUser(mappedUser)
+
+        // Redirect to role-based dashboard after successful login
+        if (shouldRedirect) {
+          const roleRoutes: Record<Role, string> = {
+            'ADMIN': '/admin',
+            'VELI': '/veli',
+            'OGRENCI': '/ogrenci',
+            'OGRETMEN': '/ogretmen',
+            'KANTINCI': '/kantinci',
+            'SERVICI': '/servici'
+          }
+
+          const redirectPath = roleRoutes[mappedUser.role] || '/admin'
+          router.push(redirectPath)
+        }
       } else {
         // Fallback to mock user for development
         const mockUser = getUserFromPath(pathname)
@@ -172,7 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          await fetchUserProfile(session.user)
+          // Redirect to dashboard after successful login
+          await fetchUserProfile(session.user, true)
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
           router.push('/giris')
