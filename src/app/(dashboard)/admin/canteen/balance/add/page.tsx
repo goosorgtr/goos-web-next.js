@@ -2,11 +2,11 @@
 
 import React from 'react'
 
-export default function PlaceholderPage() {
-  return (
-    <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
-      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
-    </div>
-  )
+export default function CanteenBalanceAddPage() {
+    return (
+        <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold">Bakiye YÃ¼kle</h1>
+            <p className="text-muted-foreground">Bu sayfa yapÄ±m aÅŸamasÄ±ndadÄ±r.</p>
+        </div>
+    )
 }
