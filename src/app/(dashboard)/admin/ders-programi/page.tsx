@@ -1,14 +1,12 @@
 'use client'
 
-import { AdminDersProgramiDashboard } from '@/components/admin/ders-programi/AdminDersProgramiDashboard'
-import { useAuth } from '@/contexts/auth-context'
+import React from 'react'
 
-export default function AdminDersProgramiPage() {
-    const { user } = useAuth()
-
-    if (!user) return null
-
-    // Admin can view specific class or teacher schedule
-    // For now, showing default schedule
-    return <AdminDersProgramiDashboard userId={user.id} />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

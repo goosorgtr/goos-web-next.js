@@ -1,10 +1,12 @@
-import { ProfilePage } from '@/components/shared/ProfilePage'
+'use client'
 
-export const metadata = {
-  title: 'Profilim - Kantinci',
-  description: 'Kantinci profil sayfası'
-}
+import React from 'react'
 
-export default function KantinciProfilPage() {
-  return <ProfilePage />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

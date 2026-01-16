@@ -1,10 +1,12 @@
-export default function VeliEtkinlikDuyuruPage() {
-    return (
-        <div className="p-6">
-            <h1 className="mb-4 text-2xl font-bold">Etkinlik ve Duyurular</h1>
-            <div className="rounded-lg border bg-white p-8 text-center text-gray-500 shadow-sm">
-                <p>Okul duyuruları ve etkinlikleri buraya gelecek.</p>
-            </div>
-        </div>
-    )
+'use client'
+
+import React from 'react'
+
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

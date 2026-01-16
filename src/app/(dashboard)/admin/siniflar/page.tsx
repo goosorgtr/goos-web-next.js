@@ -1,8 +1,12 @@
 'use client'
 
-import { AdminClassesDashboard } from '@/components/admin/classes/AdminClassesDashboard'
+import React from 'react'
 
-export default function SiniflarPage() {
-  return <AdminClassesDashboard />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }
-

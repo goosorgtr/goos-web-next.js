@@ -1,15 +1,12 @@
 'use client'
 
-import { VeliDersProgramiDashboard } from '@/components/veli/ders-programi/VeliDersProgramiDashboard'
-import { useAuth } from '@/contexts/auth-context'
+import React from 'react'
 
-export default function VeliDersProgramiPage() {
-    const { user } = useAuth()
-
-    if (!user) return null
-
-    // TODO: Get selected child's ID from user context or state
-    const selectedChildId = user.id // Placeholder
-
-    return <VeliDersProgramiDashboard userId={user.id} ogrenciId={selectedChildId} />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

@@ -1,12 +1,12 @@
 'use client'
 
-import { OgretmenDersProgramiDashboard } from '@/components/ogretmen/ders-programi/OgretmenDersProgramiDashboard'
-import { useAuth } from '@/contexts/auth-context'
+import React from 'react'
 
-export default function ProgramPage() {
-    const { user } = useAuth()
-
-    if (!user) return null
-
-    return <OgretmenDersProgramiDashboard userId={user.id} ogretmenId={user.id} />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

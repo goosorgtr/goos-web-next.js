@@ -1,12 +1,12 @@
-export default function BildirimlerPage() {
-    return (
-        <div>
-            <h1 className="mb-6 text-3xl font-bold">Bildirimler</h1>
-            <div className="rounded-lg border bg-white p-6">
-                <p className="text-gray-600">
-                    Bildirimler sayfası yakında eklenecek.
-                </p>
-            </div>
-        </div>
-    )
+'use client'
+
+import React from 'react'
+
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }

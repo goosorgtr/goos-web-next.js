@@ -1,15 +1,12 @@
-import { OgretmenOdevDashboard } from '@/components/ogretmen/odev/OgretmenOdevDashboard'
-import type { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-    title: 'Ödevler - Öğretmen Paneli',
-    description: 'Ödev yönetimi ve değerlendirme sistemi'
-}
+import React from 'react'
 
-/**
- * Layer 1: Routing katmanı
- * Sadece component çağırma ve metadata
- */
-export default function OgretmenOdevPage() {
-    return <OgretmenOdevDashboard />
+export default function PlaceholderPage() {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold">Sayfa Hazırlanıyor</h1>
+      <p className="text-muted-foreground">Bu sayfa henüz yapım aşamasındadır.</p>
+    </div>
+  )
 }
