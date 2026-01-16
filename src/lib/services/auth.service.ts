@@ -259,21 +259,27 @@ export const authService = {
       return { success: false, message: 'Failed to create user' }
     }
 
-    // Create user profile
-    const profileResult = await supabaseApi.create('users', {
-      id: authData.user.id,
-      email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      phone: userData.phone,
-      roleId: userData.roleId,
-      isActive: true,
-    })
+    // Create user profile in database with Auth user ID
+    // Note: We use direct Supabase insert here instead of supabaseApi.create
+    // because we need to set the 'id' field to match the Auth user ID
+    const { data: profileData, error: profileError } = await supabase
+      .from('users')
+      .insert({
+        id: authData.user.id,
+        email: userData.email,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        phone: userData.phone || null,
+        role_id: userData.roleId,
+        is_active: true,
+      })
+      .select()
+      .single()
 
-    if (!profileResult.success) {
+    if (profileError) {
       // Rollback: delete auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authData.user.id)
-      return { success: false, message: 'Failed to create user profile' }
+      return { success: false, message: 'Failed to create user profile: ' + profileError.message }
     }
 
     return { success: true, data: authData.user }
