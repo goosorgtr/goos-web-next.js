@@ -180,6 +180,12 @@ export interface TeacherCourse {
     isActive: boolean | null
 }
 
+export enum HomeworkGeneralStatus {
+  ACTIVE = 'active',
+  PENDING = 'pending',
+  GRADED = 'graded'
+}
+
 export interface Homework {
     id: string
     courseId: string | null
@@ -190,6 +196,7 @@ export interface Homework {
     description: string | null
     dueDate: string | null
     isActive: boolean | null
+    generalStatus: HomeworkGeneralStatus | null
     createdBy: string | null
     updatedAt: string | null
 }

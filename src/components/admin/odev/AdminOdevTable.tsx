@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Edit, Trash2, Eye, Calendar, User, BookOpen } from 'lucide-react'
+import { Edit, Trash2, List, Calendar, User, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,26 +14,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { homeworkService } from '@/lib/services/homework.service'
+import { HomeworkGeneralStatus } from '@/modules/odev/types/homework.types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 interface AdminOdevTableProps {
   homeworks: any[]
   isLoading: boolean
+  onViewClick?: (homework: any) => void
+  onEditClick?: (homework: any) => void
 }
 
-export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
+export function AdminOdevTable({ homeworks, isLoading, onViewClick, onEditClick }: AdminOdevTableProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Sınıf ve öğretmen isimlerini çek
-  const classIds = [...new Set(homeworks.map((hw: any) => hw.class_id).filter(Boolean))]
-  const teacherIds = [...new Set(homeworks.map((hw: any) => hw.teacher_id).filter(Boolean))]
+  // Sınıf ve öğretmen isimlerini çek (camelCase field names)
+  const classIds = Array.from(new Set(homeworks.map((hw: any) => hw.classId).filter(Boolean)))
+  const teacherIds = Array.from(new Set(homeworks.map((hw: any) => hw.teacherId).filter(Boolean)))
 
   const { data: classesData } = useQuery({
     queryKey: ['classes-for-homework', classIds],
@@ -74,7 +78,10 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
     
     setIsDeleting(true)
     try {
-      await homeworkService.delete(deletingId)
+      const result = await homeworkService.delete(deletingId)
+      if (!result.success) {
+        throw new Error(result.message || 'Ödev silinirken bir hata oluştu')
+      }
       toast.success('Ödev başarıyla silindi')
       setDeletingId(null)
       queryClient.invalidateQueries({ queryKey: ['admin-homeworks'] })
@@ -93,6 +100,121 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
       month: 'short',
       year: 'numeric'
     })
+  }
+
+  const getGeneralStatusBadge = (status: HomeworkGeneralStatus | null, dueDate: string | null) => {
+    // Eğer status string olarak geliyorsa enum'a çevir
+    let statusEnum: HomeworkGeneralStatus | null = null
+    if (status) {
+      if (typeof status === 'string') {
+        statusEnum = status as HomeworkGeneralStatus
+      } else {
+        statusEnum = status
+      }
+    }
+
+    if (!statusEnum || !dueDate) {
+      // Status yoksa veya dueDate yoksa, dueDate'e göre varsayılan göster
+      if (dueDate) {
+        const now = new Date()
+        const dueDateObj = new Date(dueDate)
+        if (dueDateObj > now) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              Aktif
+            </span>
+          )
+        } else {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+              Notlandırılmayı Bekliyor
+            </span>
+          )
+        }
+      }
+      return null
+    }
+
+    switch (statusEnum) {
+      case HomeworkGeneralStatus.ACTIVE:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+            Aktif
+          </span>
+        )
+      case HomeworkGeneralStatus.PENDING:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200">
+            Bekliyor
+          </span>
+        )
+      case HomeworkGeneralStatus.WAITING_FOR_GRADING:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+            Notlandırılmayı Bekliyor
+          </span>
+        )
+      case HomeworkGeneralStatus.GRADED:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+            Notlandırıldı
+          </span>
+        )
+      default:
+        // Eğer beklenmeyen bir değer gelirse, dueDate'e göre varsayılan göster
+        const now = new Date()
+        const dueDateObj = new Date(dueDate)
+        if (dueDateObj > now) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              Aktif
+            </span>
+          )
+        } else {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+              Notlandırılmayı Bekliyor
+            </span>
+          )
+        }
+    }
+  }
+
+  // Toggle visibility component
+  function ToggleVisibility({ homework }: { homework: any }) {
+    const queryClient = useQueryClient()
+    
+    const updateIsActiveMutation = useMutation({
+      mutationFn: async (isActive: boolean) => {
+        const result = await homeworkService.update(homework.id, { isActive })
+        if (!result.success) {
+          throw new Error(result.message || 'Güncelleme başarısız')
+        }
+        return result
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin-homeworks'] })
+        toast.success('Durum güncellendi')
+      },
+      onError: (error: any) => {
+        toast.error(error.message || 'Güncelleme başarısız')
+      }
+    })
+
+    return (
+      <div className="flex items-center gap-3">
+        <Switch
+          checked={homework.isActive || false}
+          onCheckedChange={(checked) => {
+            updateIsActiveMutation.mutate(checked)
+          }}
+          disabled={updateIsActiveMutation.isPending}
+        />
+        <span className={`text-sm font-medium ${homework.isActive ? 'text-green-600' : 'text-gray-400'}`}>
+          {homework.isActive ? 'Aktif' : 'Pasif'}
+        </span>
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -129,6 +251,9 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
                 Durum
               </th>
               <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Not Durumu
+              </th>
+              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-600">
                 İşlemler
               </th>
             </tr>
@@ -136,7 +261,7 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
           <tbody className="divide-y divide-gray-100">
             {homeworks.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-16 text-center">
+                <td colSpan={7} className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="rounded-full bg-gray-100 p-4">
                       <BookOpen className="h-8 w-8 text-gray-400" />
@@ -147,8 +272,8 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
               </tr>
             ) : (
               homeworks.map((homework: any) => {
-                const isOverdue = homework.due_date && new Date(homework.due_date) < new Date()
-                const isActive = homework.is_active
+                const isActive = homework.isActive
+                const generalStatus = homework.generalStatus
 
                 return (
                   <tr key={homework.id} className="hover:bg-gray-50/50 transition-colors">
@@ -164,35 +289,28 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-700">
-                        {classesMap.get(homework.class_id) || '-'}
+                        {classesMap.get(homework.classId) || '-'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-700">
-                        {teachersMap.get(homework.teacher_id) || '-'}
+                        {teachersMap.get(homework.teacherId) || '-'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-700">
                         <Calendar className="h-4 w-4 text-gray-400" />
-                        {formatDate(homework.due_date)}
+                        {formatDate(homework.dueDate)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">
-                        {isOverdue && isActive ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200">
-                            Süresi Geçti
-                          </span>
-                        ) : isActive ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
-                            Aktif
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
-                            Pasif
-                          </span>
-                        )}
+                        <ToggleVisibility homework={homework} />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        {getGeneralStatusBadge(generalStatus, homework.dueDate)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -203,12 +321,12 @@ export function AdminOdevTable({ homeworks, isLoading }: AdminOdevTableProps) {
                           onClick={() => router.push(`/admin/odevler/${homework.id}`)}
                           className="gap-2"
                         >
-                          <Eye className="h-4 w-4" />
+                          <List className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/admin/odevler/${homework.id}/edit`)}
+                          onClick={() => onEditClick ? onEditClick(homework) : null}
                           className="gap-2"
                         >
                           <Edit className="h-4 w-4" />

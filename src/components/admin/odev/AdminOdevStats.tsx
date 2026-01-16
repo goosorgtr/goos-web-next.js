@@ -6,19 +6,14 @@ interface AdminOdevStatsProps {
 
 export function AdminOdevStats({ homeworks }: AdminOdevStatsProps) {
   const total = homeworks.length
-  const published = homeworks.filter((hw: any) => hw.is_active).length
+  const active = homeworks.filter((hw: any) => hw.isActive).length
   const upcoming = homeworks.filter((hw: any) => {
-    if (!hw.due_date) return false
-    const dueDate = new Date(hw.due_date)
+    if (!hw.dueDate) return false
+    const dueDate = new Date(hw.dueDate)
     const now = new Date()
-    return dueDate > now
+    return dueDate > now && hw.isActive
   }).length
-  const overdue = homeworks.filter((hw: any) => {
-    if (!hw.due_date) return false
-    const dueDate = new Date(hw.due_date)
-    const now = new Date()
-    return dueDate < now && hw.is_active
-  }).length
+  const inactive = homeworks.filter((hw: any) => !hw.isActive).length
 
   const stats = [
     {
@@ -28,7 +23,7 @@ export function AdminOdevStats({ homeworks }: AdminOdevStatsProps) {
     },
     {
       title: 'Aktif Ödevler',
-      value: published,
+      value: active,
       description: 'Yayında olan ödevler'
     },
     {
@@ -37,9 +32,9 @@ export function AdminOdevStats({ homeworks }: AdminOdevStatsProps) {
       description: 'Teslim tarihi yaklaşan'
     },
     {
-      title: 'Süresi Geçen',
-      value: overdue,
-      description: 'Teslim tarihi geçmiş'
+      title: 'Pasif Ödevler',
+      value: inactive,
+      description: 'Pasif durumda olan ödevler'
     }
   ]
 

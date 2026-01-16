@@ -45,7 +45,8 @@ export async function getAll<T extends keyof Database['public']['Tables']>(
     options: QueryOptions = {}
 ): Promise<SupabaseResponse<Tables<T>[]>> {
     try {
-        const { page = 1, limit = 10, sortBy, sortOrder = 'asc', filters } = options
+        // Default limit'i 1000'e çıkar (cache sorununu önlemek için)
+        const { page = 1, limit = 1000, sortBy, sortOrder = 'asc', filters } = options
 
         let query = supabase.from(table).select('*', { count: 'exact' })
 

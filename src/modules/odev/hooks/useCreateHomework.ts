@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { homeworkService } from '../services/homework.service'
-import type { CreateHomeworkInput } from '../types'
+import type { CreateHomeworkInput } from '../types/homework.types'
 import { toast } from 'sonner'
 
 /**
@@ -23,6 +23,7 @@ export function useCreateHomework() {
         onSuccess: () => {
             // Ödev listesini yenile
             queryClient.invalidateQueries({ queryKey: ['homeworks'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-homeworks'] })
             toast.success('Ödev başarıyla oluşturuldu')
         },
         onError: (error: any) => {

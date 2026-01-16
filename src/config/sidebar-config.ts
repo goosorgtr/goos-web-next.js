@@ -132,12 +132,6 @@ const adminSidebarConfig: SidebarConfig = {
             icon: UserX,
         },
         {
-            id: 'sinavlar',
-            label: 'Sınavlar',
-            href: '/admin/sinavlar',
-            icon: ClipboardList,
-        },
-        {
             id: 'etkinlik-duyuru',
             label: 'Etkinlik ve Duyuru',
             href: '/admin/etkinlik-duyuru',

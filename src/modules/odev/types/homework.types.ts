@@ -1,67 +1,58 @@
-// Ödev modülü için TypeScript tipleri
+// Ödev modülü için TypeScript tipleri - Supabase uyumlu
+
+export type HomeworkStatusType = 'done' | 'not_done' | 'incomplete' | 'pending' | null
+
+export enum HomeworkGeneralStatus {
+  ACTIVE = 'active',                    // Aktif Ödev (teslim tarihi henüz gelmedi)
+  PENDING = 'pending',                  // Bekliyor (başlangıç durumu)
+  WAITING_FOR_GRADING = 'waiting_for_grading',  // Notlandırılmayı Bekliyor (teslim tarihi geçti/geldi, henüz notlandırılmadı)
+  GRADED = 'graded'                     // Notlandırıldı (tüm öğrenciler notlandırıldı)
+}
 
 export interface Homework {
   id: string
-  title: string
-  description: string
-  dueDate: Date
-  subject: string
-  classId: string
-  teacherId: string
-  createdAt: Date
-  updatedAt: Date
-  status: HomeworkStatus
-  attachments?: Attachment[]
+  courseId: string | null
+  classId: string | null
+  teacherId: string | null
+  semesterId: string | null
+  title: string | null
+  description: string | null
+  dueDate: string | null // ISO date string
+  isActive: boolean | null
+  generalStatus: HomeworkGeneralStatus | null
+  createdBy: string | null
+  updatedAt: string | null
 }
 
-export interface HomeworkSubmission {
-  id: string
-  homeworkId: string
-  studentId: string
-  submittedAt: Date
-  content: string
-  attachments?: Attachment[]
-  grade?: number
-  feedback?: string
-  status: SubmissionStatus
-}
-
-export interface Attachment {
-  id: string
-  name: string
-  url: string
-  type: string
-  size: number
-}
-
-export enum HomeworkStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  CLOSED = 'CLOSED'
-}
-
-export enum SubmissionStatus {
-  NOT_SUBMITTED = 'NOT_SUBMITTED',
-  SUBMITTED = 'SUBMITTED',
-  GRADED = 'GRADED',
-  LATE = 'LATE'
+export interface HomeworkStatus {
+  homework_id: string
+  student_id: string
+  status: HomeworkStatusType
+  feedback: string | null
+  updated_at: string | null
 }
 
 export interface HomeworkFilters {
   classId?: string
-  subject?: string
-  status?: HomeworkStatus
-  dateFrom?: Date
-  dateTo?: Date
+  teacherId?: string
+  courseId?: string
+  semesterId?: string
+  isActive?: boolean
+  searchQuery?: string
+  dueDateFrom?: string
+  dueDateTo?: string
 }
 
 export interface CreateHomeworkInput {
   title: string
-  description: string
-  dueDate: Date
-  subject: string
+  description?: string | null
+  dueDate: string // ISO date string
   classId: string
-  attachments?: File[]
+  courseId: string
+  teacherId: string
+  semesterId?: string | null
+  isActive?: boolean
+  createdBy?: string | null
 }
 
 export interface UpdateHomeworkInput extends Partial<CreateHomeworkInput> {
@@ -70,12 +61,14 @@ export interface UpdateHomeworkInput extends Partial<CreateHomeworkInput> {
 
 export interface SubmitHomeworkInput {
   homeworkId: string
-  content: string
-  attachments?: File[]
+  studentId: string
+  content?: string
+  fileUrl?: string
 }
 
 export interface GradeHomeworkInput {
-  submissionId: string
+  homeworkId: string
+  studentId: string
   grade: number
   feedback?: string
 }

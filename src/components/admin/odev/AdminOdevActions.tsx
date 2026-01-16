@@ -2,16 +2,17 @@
 
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
 
-export function AdminOdevActions() {
-  const router = useRouter()
+interface AdminOdevActionsProps {
+  onAddClick: () => void
+}
 
+export function AdminOdevActions({ onAddClick }: AdminOdevActionsProps) {
   return (
     <div className="ml-auto">
       <Button 
         className="gap-2" 
-        onClick={() => router.push('/admin/odevler/create')}
+        onClick={onAddClick}
       >
         <Plus className="h-4 w-4" />
         Ödev Ekle

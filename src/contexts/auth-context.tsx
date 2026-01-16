@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import { supabaseApi } from '@/lib/supabase/api'
 import type { Role } from '@/types/roles'
@@ -77,6 +78,7 @@ export const MOCK_USERS: Record<Role, User> = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -252,9 +254,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else if (event === 'SIGNED_OUT') {
               console.log('🔴 [AUTH CONTEXT] SIGNED_OUT event')
               if (isMounted) {
+                // Cache'i temizle
+                queryClient.clear()
                 setUser(null)
                 router.push('/giris')
               }
+            } else if (event === 'TOKEN_REFRESHED') {
+              // Token yenilendiğinde cache'i invalidate et
+              console.log('🟡 [AUTH CONTEXT] TOKEN_REFRESHED event, cache invalidate ediliyor')
+              queryClient.invalidateQueries()
             } else {
               console.log('🔵 [AUTH CONTEXT] Diğer event:', event)
             }
@@ -277,7 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         subscription.unsubscribe()
       }
     }
-  }, [pathname, router, fetchUserProfile])
+  }, [pathname, router, fetchUserProfile, queryClient])
 
   // URL değiştiğinde kullanıcıyı güncelle (backward compatibility)
   useEffect(() => {
@@ -291,12 +299,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Önce cache'i temizle
+      queryClient.clear()
+      
       await supabase.auth.signOut()
       localStorage.removeItem('token')
       setUser(null)
       router.push('/giris')
     } catch (error) {
       console.error('Error signing out:', error)
+      // Hata olsa bile cache'i temizle
+      queryClient.clear()
     }
   }
 
