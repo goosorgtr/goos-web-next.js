@@ -26,51 +26,115 @@ export default function LoginPage() {
   const [useEmail, setUseEmail] = useState(false) // Toggle between TC and Email
 
   const handleLogin = async (e: React.FormEvent) => {
+    console.log('🔵 [LOGIN] Giriş işlemi başlatıldı')
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
       let result
+      const startTime = Date.now()
 
       // Login with Email
       if (useEmail && email) {
+        console.log('🔵 [LOGIN] E-posta ile giriş yapılıyor:', { email: email.substring(0, 3) + '***' })
+        const signInStart = Date.now()
         result = await authService.signIn({
           email,
           password
         })
+        console.log('🔵 [LOGIN] signIn tamamlandı:', { 
+          success: result.success, 
+          duration: Date.now() - signInStart + 'ms',
+          hasUser: !!result.data,
+          userId: result.data?.id 
+        })
       } 
       // Login with TC Number
       else if (!useEmail && tcNumber) {
+        console.log('🔵 [LOGIN] TC Kimlik ile giriş yapılıyor:', { tcNo: tcNumber.substring(0, 3) + '***' })
+        const signInStart = Date.now()
         result = await authService.signInWithTcNo({
           tcNo: tcNumber,
           password
         })
+        console.log('🔵 [LOGIN] signInWithTcNo tamamlandı:', { 
+          success: result.success, 
+          duration: Date.now() - signInStart + 'ms',
+          hasUser: !!result.data,
+          userId: result.data?.id 
+        })
       } else {
+        console.log('🔴 [LOGIN] Form validasyonu başarısız - alanlar eksik')
         setError('Lütfen tüm alanları doldurun!')
         setLoading(false)
         return
       }
 
       if (result.success) {
+        console.log('🟢 [LOGIN] Giriş başarılı! Toast gösteriliyor...')
         toast.success('Giriş başarılı!')
         
-        // Wait a bit for session to be set
-        await new Promise(resolve => setTimeout(resolve, 100))
+        console.log('🔵 [LOGIN] Session ayarlanması için bekleniyor...')
         
-        // Get current session and redirect
-        const sessionResult = await authService.getSession()
-        if (sessionResult.success && sessionResult.data?.user) {
+        // Retry mekanizması ile session kontrolü
+        let sessionResult: any = null
+        const maxRetries = 5
+        const retryDelay = 200 // ms
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          console.log(`🔵 [LOGIN] Session kontrolü (deneme ${attempt}/${maxRetries})...`)
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+          
+          const sessionCheckStart = Date.now()
+          sessionResult = await authService.getSession()
+          console.log(`🔵 [LOGIN] getSession tamamlandı (deneme ${attempt}):`, { 
+            success: sessionResult.success, 
+            duration: Date.now() - sessionCheckStart + 'ms',
+            hasSession: !!sessionResult.data,
+            hasUser: !!sessionResult.data?.user,
+            userId: sessionResult.data?.user?.id 
+          })
+          
+          if (sessionResult.success && sessionResult.data?.user) {
+            console.log(`🟢 [LOGIN] Session bulundu (deneme ${attempt})`)
+            break
+          }
+          
+          if (attempt < maxRetries) {
+            console.log(`🟡 [LOGIN] Session bulunamadı, ${retryDelay}ms sonra tekrar denenecek...`)
+          }
+        }
+        
+        if (sessionResult?.success && sessionResult?.data?.user) {
+          console.log('🟢 [LOGIN] Session geçerli, kullanıcı profili alınıyor...')
           // Fetch user profile and redirect
           const { supabase } = await import('@/lib/supabase/client')
           const { supabaseApi } = await import('@/lib/supabase/api')
           
           try {
+            const profileStart = Date.now()
+            console.log('🔵 [LOGIN] Kullanıcı profili getiriliyor, userId:', sessionResult.data.user.id)
             const userResponse = await supabaseApi.getById('users', sessionResult.data.user.id)
+            console.log('🔵 [LOGIN] Kullanıcı profili alındı:', { 
+              success: userResponse.success, 
+              duration: Date.now() - profileStart + 'ms',
+              hasData: !!userResponse.data,
+              roleId: userResponse.data?.roleId 
+            })
             
             if (userResponse.success && userResponse.data) {
               const userData = userResponse.data
+              console.log('🔵 [LOGIN] Rol bilgisi alınıyor, roleId:', userData.roleId)
+              const roleStart = Date.now()
               const roleResponse = await supabaseApi.getById('roles', userData.roleId || '')
+              console.log('🔵 [LOGIN] Rol bilgisi alındı:', { 
+                success: roleResponse.success, 
+                duration: Date.now() - roleStart + 'ms',
+                hasData: !!roleResponse.data,
+                roleName: roleResponse.data?.name 
+              })
+              
               const roleName = roleResponse.success ? roleResponse.data.name : 'OGRENCI'
               
               const roleMap: Record<string, string> = {
@@ -83,24 +147,46 @@ export default function LoginPage() {
               }
               
               const redirectPath = roleMap[roleName.toLowerCase()] || '/admin'
+              console.log('🟢 [LOGIN] Yönlendirme yapılıyor:', { 
+                roleName, 
+                redirectPath,
+                totalDuration: Date.now() - startTime + 'ms'
+              })
               router.push(redirectPath)
+              console.log('🟢 [LOGIN] router.push çağrıldı, yönlendirme başlatıldı')
               return
+            } else {
+              console.log('🔴 [LOGIN] Kullanıcı profili alınamadı, fallback yönlendirme yapılıyor')
             }
           } catch (profileError) {
-            console.error('Error fetching user profile:', profileError)
+            console.error('🔴 [LOGIN] Kullanıcı profili alınırken hata:', profileError)
             // Redirect to admin as fallback
+            console.log('🔵 [LOGIN] Hata durumunda /admin\'e yönlendiriliyor')
             router.push('/admin')
             return
           }
+        } else {
+          console.log('🔴 [LOGIN] Session geçersiz veya kullanıcı yok:', {
+            sessionSuccess: sessionResult.success,
+            hasSession: !!sessionResult.data,
+            hasUser: !!sessionResult.data?.user
+          })
         }
         
         // Fallback redirect if session check fails
+        console.log('🔵 [LOGIN] Session kontrolü başarısız, fallback olarak /admin\'e yönlendiriliyor')
         router.push('/admin')
+        console.log('🟢 [LOGIN] Fallback router.push çağrıldı')
       } else {
+        console.log('🔴 [LOGIN] Giriş başarısız:', { 
+          message: result.message,
+          totalDuration: Date.now() - startTime + 'ms'
+        })
         setError(result.message || 'Giriş başarısız!')
         setLoading(false)
       }
     } catch (error) {
+      console.error('🔴 [LOGIN] Beklenmeyen hata:', error)
       setError(error instanceof Error ? error.message : 'Bir hata oluştu')
       setLoading(false)
     }

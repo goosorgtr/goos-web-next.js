@@ -93,8 +93,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch user profile from database
   const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser, shouldRedirect = false) => {
+    console.log('🟡 [AUTH CONTEXT] fetchUserProfile başlatıldı:', { 
+      userId: supabaseUser.id,
+      shouldRedirect 
+    })
+    const startTime = Date.now()
+    
     try {
       const response = await supabaseApi.getById('users', supabaseUser.id)
+      console.log('🔵 [AUTH CONTEXT] User profile alındı:', { 
+        success: response.success,
+        duration: Date.now() - startTime + 'ms'
+      })
 
       if (response.success && response.data) {
         const userData = response.data
@@ -124,6 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setUser(mappedUser)
+        console.log('🟢 [AUTH CONTEXT] User set edildi:', { 
+          userId: mappedUser.id,
+          role: mappedUser.role
+        })
 
         // Redirect to role-based dashboard after successful login
         if (shouldRedirect) {
@@ -137,7 +151,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
 
           const redirectPath = roleRoutes[mappedUser.role] || '/admin'
+          console.log('🟢 [AUTH CONTEXT] Yönlendirme yapılıyor:', { 
+            role: mappedUser.role,
+            redirectPath,
+            totalDuration: Date.now() - startTime + 'ms'
+          })
           router.push(redirectPath)
+          console.log('🟢 [AUTH CONTEXT] router.push çağrıldı')
         }
       } else {
         // Fallback to mock user for development
@@ -208,30 +228,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes with proper cleanup
     try {
+      console.log('🟡 [AUTH CONTEXT] onAuthStateChange listener kuruluyor...')
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (!isMounted) return
+          console.log('🟡 [AUTH CONTEXT] onAuthStateChange event tetiklendi:', { 
+            event, 
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            userId: session?.user?.id
+          })
+          
+          if (!isMounted) {
+            console.log('🔴 [AUTH CONTEXT] Component unmounted, event işlenmiyor')
+            return
+          }
 
           try {
             if (event === 'SIGNED_IN' && session?.user) {
+              console.log('🟢 [AUTH CONTEXT] SIGNED_IN event, fetchUserProfile çağrılıyor...')
               // Redirect to dashboard after successful login
               await fetchUserProfile(session.user, true)
+              console.log('🟢 [AUTH CONTEXT] fetchUserProfile tamamlandı')
             } else if (event === 'SIGNED_OUT') {
+              console.log('🔴 [AUTH CONTEXT] SIGNED_OUT event')
               if (isMounted) {
                 setUser(null)
                 router.push('/giris')
               }
+            } else {
+              console.log('🔵 [AUTH CONTEXT] Diğer event:', event)
             }
           } catch (error) {
             if (isMounted) {
-              console.error('Error in auth state change:', error)
+              console.error('🔴 [AUTH CONTEXT] Error in auth state change:', error)
             }
           }
         }
       )
       subscription = authSubscription
+      console.log('🟢 [AUTH CONTEXT] onAuthStateChange listener kuruldu')
     } catch (error) {
-      console.error('Error setting up auth listener:', error)
+      console.error('🔴 [AUTH CONTEXT] Error setting up auth listener:', error)
     }
 
     return () => {

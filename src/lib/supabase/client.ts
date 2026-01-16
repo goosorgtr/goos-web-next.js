@@ -8,13 +8,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
 }
 
-// Create typed Supabase client with optimized settings
+// Create typed Supabase client with Next.js optimized settings
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
+    persistSession: typeof window !== 'undefined', // Sadece browser'da persist et
     autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
+    detectSessionInUrl: false, // Next.js'te genelde false olmalı
+    flowType: 'implicit', // PKCE yerine implicit flow (Next.js için daha uyumlu)
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
   global: {
     headers: {
